@@ -36,24 +36,6 @@
     text-align: center;
     font-weight: bold;
   }
-  .m-p-reset {
-    position: absolute;
-    top: 38px;
-    right: 100px;
-    padding: 8px 20px;
-    font-size: 20px;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    border: 1px solid #aaaaaa;
-    background-color: #3D8AC7;
-    opacity: 1;
-    transition: 0.3s all;
-  }
-
-  .m-p-reset:hover {
-    opacity: 0.9;
-  }
   .m-p-other {
     position: fixed;
     right: 50px;
@@ -212,7 +194,6 @@
 <section id="m-app" v-cloak>
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
-  <div v-if="downloading" class="m-p-reset" @click="reload">重新载入</div>
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
 
   <!--文件载入-->
@@ -545,11 +526,6 @@ new Vue({
 
       return result
     },
-
-    // 页面重新加载
-    reload() {
-      location.reload();
-    }
 
   }
 })
