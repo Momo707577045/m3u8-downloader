@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="keywords" content="m3u8 downloader for web">
+  <meta name="description" content="m3u8 downloader for web, Momo's Blog, LuckyMomo">
+  <title>m3u8 downloader</title>
+  <style>
+  /*全局设置*/
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body::-webkit-scrollbar { display: none}
+  p {
+    margin: 0;
+  }
+  [v-cloak] {
+    display: none;
+  }
+  #m-app {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    padding: 10px 50px 80px;
+    box-sizing: border-box;
+  }
+  .m-p-action {
+    margin: 20px auto;
+    max-width: 1100px;
+    width: 100%;
+    font-size: 35px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .m-p-reset {
+    position: absolute;
+    top: 38px;
+    right: 100px;
+    padding: 8px 20px;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #aaaaaa;
+    background-color: #3D8AC7;
+    opacity: 1;
+    transition: 0.3s all;
+  }
+
+  .m-p-reset:hover {
+    opacity: 0.9;
+  }
+  .m-p-other {
+    position: fixed;
+    right: 50px;
+    bottom: 70px;
+    background-color: #eff3f6;
+    background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
+    color: #24292e;
+    border: 1px solid rgba(27, 31, 35, .2);
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    padding: 6px 12px;
+    z-index: 99;
+  }
+  .m-p-other:hover {
+    opacity: 0.9;
+  }
+  .m-p-other {
+    bottom: 30px;
+  }
+  /*顶部信息录入*/
+  .m-p-temp-url {
+    padding-top: 50px;
+    padding-bottom: 10px;
+    width: 100%;
+    color: #999999;
+    text-align: left;
+    font-style: italic;
+    word-break: break-all;
+  }
+  .m-p-input-container {
+    display: flex;
+  }
+  .m-p-input-container input {
+    flex: 1;
+    margin-bottom: 30px;
+    margin-right: 20px;
+    display: block;
+    width: 280px;
+    padding: 16px;
+    font-size: 24px;
+    border-radius: 4px;
+    box-shadow: none;
+    color: #444444;
+    border: 1px solid #cccccc;
+  }
+  .m-p-input-container div {
+    position: relative;
+    display: inline-block;
+    height: 60px;
+    line-height: 60px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    background-color: #3D8AC7;
+    opacity: 1;
+    transition: 0.3s all;
+  }
+  .m-p-input-container div:hover {
+    opacity: 0.9;
+  }
+  .m-p-input-container div {
+    width: 240px;
+  }
+  .m-p-input-container .disable {
+    cursor: not-allowed;
+    background-color: #dddddd;
+  }
+  /*下载状态*/
+  .m-p-line {
+    margin: 20px 0 50px;
+    vertical-align: top;
+    width: 100%;
+    height: 5px;
+    border-bottom: dotted;
+  }
+  .m-p-tips {
+    width: 100%;
+    color: #999999;
+    text-align: left;
+    font-style: italic;
+    word-break: break-all;
+  }
+  .m-p-tips p {
+    width: 100px;
+    display: inline-block;
+
+  }
+  .m-p-segment {
+    text-align: left;
+  }
+  .m-p-segment .item {
+    display: inline-block;
+    margin: 10px 6px;
+    width: 50px;
+    height: 40px;
+    color: white;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: help;
+    border: solid 1px #eeeeee;
+    background-color: #dddddd;
+  }
+  .m-p-segment .finish {
+    background-color: #0ACD76;
+  }
+  .m-p-segment .error {
+    cursor: pointer;
+    background-color: #DC5350;
+  }
+  .m-p-cross {
+    display: inline-block;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    background-color: #3D8AC7;
+    opacity: 1;
+    transition: 0.3s all;
+  }
+  .m-p-force, .m-p-retry {
+    position: absolute;
+    right: 50px;
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    background-color: #3D8AC7;
+    opacity: 1;
+    transition: 0.3s all;
+  }
+  .m-p-retry {
+    right: 250px;
+  }
+  .m-p-force:hover, .m-p-retry:hover {
+    opacity: 0.9;
+  }
+
+  </style>
+</head>
+
+<body>
+<section id="m-app" v-cloak>
+  <!--顶部操作提示-->
+  <section class="m-p-action g-box">{{tips}}</section>
+  <div v-if="downloading" class="m-p-reset" @click="reload">重新载入</div>
+  <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
+
+  <!--文件载入-->
+  <div class="m-p-temp-url">测试连接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
+  <section class="m-p-input-container">
+    <input type="text" v-model="url" accept=".ttf" :disable="downloading" placeholder="请输入 m3u8 链接">
+    <div class="" @click="getM3U8" :class="{'disable':downloading}">解析下载</div>
+  </section>
+
+  <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
+
+  <template v-if="finishList.length > 0">
+    <div class="m-p-line"></div>
+    <div class="m-p-retry" v-if="errorNum && downloadIndex >= tsUrlList.length" @click="retryAll">重新下载错误片段</div>
+    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
+    <div class="m-p-tips">碎片总量：{{ tsUrlList.length }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / tsUrlList.length * 100).toFixed(2) }}%</div>
+    <div class="m-p-tips">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
+    <section class="m-p-segment">
+      <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
+    </section>
+  </template>
+</section>
+</body>
+
+<script>
+var _hmt = _hmt || [];
+(function () {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<!--vue 前端框架-->
+<script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+
+<script>
+// script注入
+new Vue({
+  el: '#m-app',
+
+  data() {
+    return {
+      url: '', // 在线链接
+      tips: 'm3u8 视频在线提取工具', // 顶部提示
+      downloading: false, // 是否下载中
+      errorNum: 0, // 错误数
+      finishNum: 0, // 已下载数
+      downloadIndex: 0, // 当前下载片段
+      finishList: [], // 下载完成项目
+      tsUrlList: [], // ts URL数组
+      mediaFileList: [], // 下载的媒体数组
+    }
+  },
+
+  created() {
+    this.getSource();
+    window.addEventListener('keyup', this.onKeyup)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('keyup', this.onKeyup)
+  },
+
+  methods: {
+    // 获取链接中携带的资源链接
+    getSource() {
+      let { href } = location
+      if (href.indexOf('?source=')) {
+        this.url = href.split('?source=')[1]
+      }
+    },
+
+    // 退出弹窗
+    onKeyup(event) {
+      if (event.keyCode === 13) { // 键入ESC
+        this.getM3U8()
+      }
+    },
+
+    // ajax 请求
+    ajax(options) {
+      options = options || {};
+      let xhr = new XMLHttpRequest();
+      if (options.type === 'file') {
+        xhr.responseType = 'arraybuffer';
+      }
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          let status = xhr.status;
+          if (status >= 200 && status < 300) {
+            options.success && options.success(xhr.response);
+          } else {
+            options.fail && options.fail(status);
+          }
+        }
+      };
+
+      xhr.open("GET", options.url, true);
+      xhr.send(null);
+    },
+
+    // 获取在线文件
+    getM3U8() {
+      if (!this.url) {
+        alert('请输入链接')
+        return
+      } else if (this.url.toLowerCase().indexOf('m3u8') === -1) {
+        alert('链接有误，请重新输入')
+        return
+      } else if (this.downloading) {
+        alert('资源下载中，请稍后')
+        return
+      }
+
+      this.downloading = true
+
+      this.tips = 'm3u8 文件下载中，请稍后'
+      this.ajax({
+        url: this.url,
+        success: (m3u8Str) => {
+          this.tsUrlList = []
+          m3u8Str.split('\n').forEach((item) => {
+            if (item.toLowerCase().indexOf('.ts') > -1) {
+              this.tsUrlList.push(item)
+              this.finishList.push({
+                title: item,
+                status: ''
+              })
+            }
+          })
+          if (this.tsUrlList.length > 0) {
+            this.downloadTS()
+          } else {
+            this.alertError('资源为空，请查看链接是否有效')
+          }
+        },
+        fail: () => {
+          this.alertError('链接不正确，请查看链接是否有效')
+        }
+      })
+    },
+
+    // 下载分片
+    downloadTS() {
+      this.tips = 'ts 视频碎片下载中，请稍后'
+
+      let baseURL = this.url.split('/')
+      let fileName = baseURL.pop().replace(/\./g, '-')
+      baseURL = baseURL.join('/')
+
+      // 基于域名的相对路径，获取域名信息
+      if (this.tsUrlList[0][0] === '/') {
+        baseURL = baseURL.split('/')
+        baseURL = baseURL[0] + baseURL[1] + baseURL[2]
+      }
+
+      let download = () => {
+        let index = this.downloadIndex
+        let item = this.tsUrlList[index]
+        this.downloadIndex++
+        if (this.finishList[index].status === '') {
+          this.ajax({
+            type: 'file',
+            url: baseURL + '/' + item,
+            success: (file) => {
+              this.mediaFileList[index] = file
+              this.finishList[index].status = 'finish'
+              this.finishNum++
+              if (this.finishNum === this.tsUrlList.length) {
+                this.downloadFile(this.mediaFileList, fileName, 'ts')
+              } else if (this.downloadIndex < this.tsUrlList.length) {
+                download()
+              }
+            },
+            fail: () => {
+              this.errorNum++
+              this.finishList[index].status = 'error'
+              if (this.downloadIndex < this.tsUrlList.length) {
+                download()
+              }
+            }
+          })
+        } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
+          download()
+        }
+      }
+
+      // 建立多少个 ajax 线程
+      for (let i = 0; i < 10; i++) {
+        download(i)
+      }
+    },
+
+    // 重新下载某个片段
+    retry(index) {
+      if (this.finishList[index].status === 'error') {
+        this.finishList[index].status = ''
+        let baseURL = this.url.split('/')
+        let fileName = baseURL.pop().replace(/\./g, '-')
+        baseURL = baseURL.join('/')
+
+        this.ajax({
+          type: 'file',
+          url: baseURL + '/' + this.tsUrlList[index],
+          success: (file) => {
+            this.errorNum--
+            this.mediaFileList[index] = file
+            this.finishList[index].status = 'finish'
+            this.finishNum++
+            if (this.finishNum === this.tsUrlList.length) {
+              this.downloadFile(this.mediaFileList, fileName, 'ts')
+            }
+          },
+          fail: () => {
+            this.finishList[index].status = 'error'
+          }
+        })
+      }
+    },
+
+    // 重新下载所有错误片段
+    retryAll() {
+      this.finishList.forEach((item) => { // 重置所有片段状态
+        if (item.status === 'error') {
+          item.status = ''
+        }
+      })
+      this.errorNum = 0
+      this.downloadIndex = 0
+      this.downloadTS()
+    },
+
+    // 下载整合后的TS文件
+    downloadFile(fileDataList, fileName, fileType) {
+      this.tips = 'ts 碎片整合中，请留意浏览器下载'
+      const fileBlob = new Blob(fileDataList) // 创建一个Blob对象
+      const a = document.createElement('a')
+      a.download = fileName + '.' + fileType
+      a.href = URL.createObjectURL(fileBlob)
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    },
+
+    // 强制下载现有片段
+    forceDownload() {
+      if (this.mediaFileList.length) {
+        let fileName = this.url.split('/').pop().replace(/\./g, '-')
+        this.downloadFile(this.mediaFileList, fileName, 'ts')
+      } else {
+        alert('当前无已下载片段')
+      }
+    },
+
+    // 发生错误，进行提示
+    alertError(tips) {
+      alert(tips)
+      this.downloading = false
+      this.tips = 'm3u8 视频在线提取工具';
+    },
+
+    // 拷贝本页面本身，解决跨域问题
+    copyCode() {
+      if (this.tips !== '代码下载中，请稍后' && this.tips !== '复制成功，打开视频网页控制台，注入本代码') {
+        this.tips = '代码下载中，请稍后';
+        this.ajax({
+          url: './index.html',
+          success: (fileStr) => {
+            let fileList = fileStr.split(`<!--vue 前端框架--\>`);
+            let dom = fileList[0];
+            let script = fileList[1] + fileList[2];
+            script = script.split('// script注入');
+            script = script[1] + script[2];
+
+            if (this.url) {
+              script = script.replace(`url: '', // 在线链接`, `url: '${this.url}',`);
+            }
+
+            let codeStr = `
+          // 注入html
+          let $section = document.createElement('section')
+          $section.innerHTML = \`${dom}\`
+          $section.style.width = '100%'
+          $section.style.height = '800px'
+          $section.style.top = '0'
+          $section.style.left = '0'
+          $section.style.zIndex = '9999'
+          $section.style.backgroundColor = 'white'
+          document.body.appendChild($section);
+
+          // 加载 vue
+          let $vue = document.createElement('script')
+          $vue.src = 'https://cdn.bootcss.com/vue/2.6.10/vue.min.js'
+
+          // 监听 vue 加载完成，执行业务代码
+          $vue.addEventListener('load', () => {${script}})
+          document.body.appendChild($vue);
+          alert('注入成功，请滚动到页面底部')
+          `;
+            this.copyToClipboard(codeStr);
+            this.tips = '复制成功，打开视频网页控制台，注入本代码';
+          },
+          fail: () => {
+            this.alertError('链接不正确，请查看链接是否有效');
+          },
+        })
+      }
+    },
+
+    // 拷贝剪切板
+    copyToClipboard(content) {
+      clearTimeout(this.timeouter)
+
+      if (!document.queryCommandSupported('copy')) {
+        return false
+      }
+
+      let $input = document.createElement('textarea')
+      $input.style.opacity = '0'
+      $input.value = content
+      document.body.appendChild($input)
+      $input.select()
+
+      const result = document.execCommand('copy')
+      document.body.removeChild($input)
+      $input = null
+
+      return result
+    },
+
+    // 页面重新加载
+    reload() {
+      location.reload();
+    }
+
+  }
+})
+// script注入
+</script>
+
+</html>
