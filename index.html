@@ -258,6 +258,7 @@ new Vue({
       url: '', // 在线链接
       tips: 'm3u8 视频在线提取工具', // 顶部提示
       downloading: false, // 是否下载中
+      beginTime: '', // 开始下载的时间
       errorNum: 0, // 错误数
       finishNum: 0, // 已下载数
       downloadIndex: 0, // 当前下载片段
@@ -331,6 +332,7 @@ new Vue({
       this.downloading = true
 
       this.tips = 'm3u8 文件下载中，请稍后'
+      this.beginTime = new Date()
       this.ajax({
         url: this.url,
         success: (m3u8Str) => {
@@ -361,7 +363,7 @@ new Vue({
       this.tips = 'ts 视频碎片下载中，请稍后'
 
       let baseURL = this.url.split('/')
-      let fileName = baseURL.pop().replace(/\./g, '-')
+      baseURL.pop()
       baseURL = baseURL.join('/')
 
       // 基于域名的相对路径，获取域名信息
@@ -373,17 +375,23 @@ new Vue({
       let download = () => {
         let index = this.downloadIndex
         let item = this.tsUrlList[index]
+        let url = baseURL + '/' + item
         this.downloadIndex++
+
+        if (item.indexOf('http') === 0) { // 绝对路径资源，即 ts 路径携带域名，是完整的路径
+          url = item
+        }
+
         if (this.finishList[index].status === '') {
           this.ajax({
+            url,
             type: 'file',
-            url: baseURL + '/' + item,
             success: (file) => {
               this.mediaFileList[index] = file
               this.finishList[index].status = 'finish'
               this.finishNum++
               if (this.finishNum === this.tsUrlList.length) {
-                this.downloadFile(this.mediaFileList, fileName, 'ts')
+                this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
               } else if (this.downloadIndex < this.tsUrlList.length) {
                 download()
               }
@@ -412,19 +420,25 @@ new Vue({
       if (this.finishList[index].status === 'error') {
         this.finishList[index].status = ''
         let baseURL = this.url.split('/')
-        let fileName = baseURL.pop().replace(/\./g, '-')
+        baseURL.pop()
         baseURL = baseURL.join('/')
 
+        let url = baseURL + '/' + this.tsUrlList[index]
+
+        if (this.tsUrlList[index].indexOf('http') === 0) { // 绝对路径资源，即 ts 路径携带域名，是完整的路径
+          url = this.tsUrlList[index]
+        }
+
         this.ajax({
+          url,
           type: 'file',
-          url: baseURL + '/' + this.tsUrlList[index],
           success: (file) => {
             this.errorNum--
             this.mediaFileList[index] = file
             this.finishList[index].status = 'finish'
             this.finishNum++
             if (this.finishNum === this.tsUrlList.length) {
-              this.downloadFile(this.mediaFileList, fileName, 'ts')
+              this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
             }
           },
           fail: () => {
@@ -459,11 +473,26 @@ new Vue({
       a.remove()
     },
 
+    // 格式化时间
+    formatTime(date, formatStr) {
+      const formatType = {
+        Y: date.getFullYear(),
+        M: date.getMonth() + 1,
+        D: date.getDate(),
+        h: date.getHours(),
+        m: date.getMinutes(),
+        s: date.getSeconds(),
+      }
+      return formatStr.replace(
+        /Y+|M+|D+|h+|m+|s+/g,
+        target => (new Array(target.length).join('0') + formatType[target[0]]).substr(-target.length)
+      )
+    },
+
     // 强制下载现有片段
     forceDownload() {
       if (this.mediaFileList.length) {
-        let fileName = this.url.split('/').pop().replace(/\./g, '-')
-        this.downloadFile(this.mediaFileList, fileName, 'ts')
+        this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
       } else {
         alert('当前无已下载片段')
       }
