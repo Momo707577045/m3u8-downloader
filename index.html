@@ -390,10 +390,16 @@ new Vue({
 
           // 检测视频 AES 加密
           if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
-            let params = m3u8Str.match(/#EXT-X-KEY:(,?METHOD=([^,]+))?(,?URI="([^,]+)")?(,?IV=([^,^\n]+))?/)
-            this.aesConf.method = params[2]
-            this.aesConf.uri = this.applyURL(params[4], this.url)
-            this.aesConf.iv = params[6] ? this.aesConf.stringToBuffer(params[6]) : ''
+            this.aesConf.method = (m3u8Str.match(/(.*METHOD=([^,]+))/) || ['', '', ''])[2]
+            this.aesConf.uri = (m3u8Str.match(/(.*URI="([^"]+))"/) || ['', '', ''])[2]
+            this.aesConf.iv = (m3u8Str.match(/(.*IV=([^,]+))/) || ['', '', ''])[2]
+            this.aesConf.iv = this.aesConf.iv ? this.aesConf.stringToBuffer(this.aesConf.iv) : ''
+            this.aesConf.uri = this.applyURL(this.aesConf.uri, this.url)
+
+            // let params = m3u8Str.match(/#EXT-X-KEY:([^,]*,?METHOD=([^,]+))?([^,]*,?URI="([^,]+)")?([^,]*,?IV=([^,^\n]+))?/)
+            // this.aesConf.method = params[2]
+            // this.aesConf.uri = this.applyURL(params[4], this.url)
+            // this.aesConf.iv = params[6] ? this.aesConf.stringToBuffer(params[6]) : ''
             this.getAES();
           } else if (this.tsUrlList.length > 0) { // 如果视频没加密，则直接下载片段，否则先下载秘钥
             this.downloadTS()
