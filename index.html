@@ -247,6 +247,7 @@ var _hmt = _hmt || [];
 </script>
 <!--vue 前端框架-->
 <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+<script src="./aes-decryptor.js"></script>
 
 <script>
 // script注入
@@ -270,6 +271,23 @@ new Vue({
         uri: '', // key 所在文件路径
         iv: '', // 偏移值
         key: '', // 秘钥
+        decryptor: null, // 解码器对象
+
+        stringToBuffer: function (str) {
+          let val = ''
+          for (let i = 0; i < str.length; i++) {
+            if (val === '') {
+              val = str.charCodeAt(i).toString(16)
+            } else {
+              val += ',' + str.charCodeAt(i).toString(16)
+            }
+          }
+
+          // 将16进制转化为ArrayBuffer
+          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function (h) {
+            return parseInt(h, 16)
+          })).buffer
+        },
       },
     }
   },
@@ -358,19 +376,9 @@ new Vue({
         url: this.url,
         success: (m3u8Str) => {
           this.tsUrlList = []
-          // 检测视频 AES 加密
-          if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
-            let params = m3u8Str.match(/#EXT-X-KEY:(,?METHOD=([^,]+))?(,?URI="([^,]+)")?(,?IV=([^,^\n]+))?/)
-            this.aesConf = {
-              method: params[2],
-              uri: this.applyURL(params[4], this.url),
-              iv: params[6],
-            }
-            this.getAES();
-          }
 
           // 提取 ts 视频片段地址
-          m3u8Str.split('\n').forEach((item) => {
+          m3u8Str.split('\n').forEach((item, index) => {
             if (item.toLowerCase().indexOf('.ts') > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
@@ -379,8 +387,15 @@ new Vue({
               })
             }
           })
-          // 如果视频没加密，则直接下载片段，否则先下载秘钥
-          if (this.tsUrlList.length > 0 && !this.aesConf.uri) {
+
+          // 检测视频 AES 加密
+          if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
+            let params = m3u8Str.match(/#EXT-X-KEY:(,?METHOD=([^,]+))?(,?URI="([^,]+)")?(,?IV=([^,^\n]+))?/)
+            this.aesConf.method = params[2]
+            this.aesConf.uri = this.applyURL(params[4], this.url)
+            this.aesConf.iv = params[6] ? this.aesConf.stringToBuffer(params[6]) : ''
+            this.getAES();
+          } else if (this.tsUrlList.length > 0) { // 如果视频没加密，则直接下载片段，否则先下载秘钥
             this.downloadTS()
           } else {
             this.alertError('资源为空，请查看链接是否有效')
@@ -395,9 +410,12 @@ new Vue({
     // 获取AES配置
     getAES() {
       this.ajax({
-        url: this.url,
+        url: this.aesConf.uri,
         success: (key) => {
-          this.aesConf.key = key
+          this.aesConf.key = this.aesConf.stringToBuffer(key)
+          this.aesConf.decryptor = new AESDecryptor()
+          this.aesConf.decryptor.constructor()
+          this.aesConf.decryptor.expandKey(this.aesConf.key);
           this.downloadTS()
         },
         fail: () => {
@@ -406,19 +424,24 @@ new Vue({
       })
     },
 
+    // ts 片段的 AES 解码
+    aesDecrypt(data, index) {
+      let iv = this.aesConf.iv || new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index])
+      return this.aesConf.decryptor.decrypt(data, 0, iv.buffer, true)
+    },
+
     // 下载分片
     downloadTS() {
       this.tips = 'ts 视频碎片下载中，请稍后'
       let download = () => {
         let index = this.downloadIndex
         this.downloadIndex++
-
-        if (this.finishList[index].status === '') {
+        if (this.finishList[index] && this.finishList[index].status === '') {
           this.ajax({
             url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
-              this.mediaFileList[index] = file
+              this.mediaFileList[index] = this.aesConf.uri ? this.aesDecrypt(file, index) : file // 判断文件是否需要解密
               this.finishList[index].status = 'finish'
               this.finishNum++
               if (this.finishNum === this.tsUrlList.length) {
@@ -455,7 +478,7 @@ new Vue({
           type: 'file',
           success: (file) => {
             this.errorNum--
-            this.mediaFileList[index] = file
+            this.mediaFileList[index] = this.aesConf.uri ? this.aesDecrypt(file, index) : file
             this.finishList[index].status = 'finish'
             this.finishNum++
             if (this.finishNum === this.tsUrlList.length) {
