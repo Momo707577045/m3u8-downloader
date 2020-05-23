@@ -265,6 +265,12 @@ new Vue({
       finishList: [], // 下载完成项目
       tsUrlList: [], // ts URL数组
       mediaFileList: [], // 下载的媒体数组
+      aesConf: { // AES 视频解密配置
+        method: '', // 加密算法
+        uri: '', // key 所在文件路径
+        iv: '', // 偏移值
+        key: '', // 秘钥
+      },
     }
   },
 
@@ -316,6 +322,21 @@ new Vue({
       xhr.send(null);
     },
 
+    // 合成URL
+    applyURL(targetURL, baseURL) {
+      baseURL = baseURL || location.href
+      if (targetURL.indexOf('http') === 0) {
+        return targetURL
+      } else if (targetURL[0] === '/') {
+        let domain = baseURL.split('/')
+        return domain[0] + '//' + domain[2] + targetURL
+      } else {
+        let domain = baseURL.split('/')
+        domain.pop()
+        return domain.join('/') + '/' + targetURL
+      }
+    },
+
     // 获取在线文件
     getM3U8() {
       if (!this.url) {
@@ -337,16 +358,29 @@ new Vue({
         url: this.url,
         success: (m3u8Str) => {
           this.tsUrlList = []
+          // 检测视频 AES 加密
+          if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
+            let params = m3u8Str.match(/#EXT-X-KEY:(,?METHOD=([^,]+))?(,?URI="([^,]+)")?(,?IV=([^,^\n]+))?/)
+            this.aesConf = {
+              method: params[2],
+              uri: this.applyURL(params[4], this.url),
+              iv: params[6],
+            }
+            this.getAES();
+          }
+
+          // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
             if (item.toLowerCase().indexOf('.ts') > -1) {
-              this.tsUrlList.push(item)
+              this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
                 status: ''
               })
             }
           })
-          if (this.tsUrlList.length > 0) {
+          // 如果视频没加密，则直接下载片段，否则先下载秘钥
+          if (this.tsUrlList.length > 0 && !this.aesConf.uri) {
             this.downloadTS()
           } else {
             this.alertError('资源为空，请查看链接是否有效')
@@ -358,33 +392,30 @@ new Vue({
       })
     },
 
+    // 获取AES配置
+    getAES() {
+      this.ajax({
+        url: this.url,
+        success: (key) => {
+          this.aesConf.key = key
+          this.downloadTS()
+        },
+        fail: () => {
+          this.alertError('AES 配置不正确')
+        }
+      })
+    },
+
     // 下载分片
     downloadTS() {
       this.tips = 'ts 视频碎片下载中，请稍后'
-
-      let baseURL = this.url.split('/')
-      baseURL.pop()
-      baseURL = baseURL.join('/')
-
-      // 基于域名的相对路径，获取域名信息
-      if (this.tsUrlList[0][0] === '/') {
-        baseURL = baseURL.split('/')
-        baseURL = baseURL[0] + baseURL[1] + baseURL[2]
-      }
-
       let download = () => {
         let index = this.downloadIndex
-        let item = this.tsUrlList[index]
-        let url = baseURL + '/' + item
         this.downloadIndex++
-
-        if (item.indexOf('http') === 0) { // 绝对路径资源，即 ts 路径携带域名，是完整的路径
-          url = item
-        }
 
         if (this.finishList[index].status === '') {
           this.ajax({
-            url,
+            url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
               this.mediaFileList[index] = file
@@ -419,18 +450,8 @@ new Vue({
     retry(index) {
       if (this.finishList[index].status === 'error') {
         this.finishList[index].status = ''
-        let baseURL = this.url.split('/')
-        baseURL.pop()
-        baseURL = baseURL.join('/')
-
-        let url = baseURL + '/' + this.tsUrlList[index]
-
-        if (this.tsUrlList[index].indexOf('http') === 0) { // 绝对路径资源，即 ts 路径携带域名，是完整的路径
-          url = this.tsUrlList[index]
-        }
-
         this.ajax({
-          url,
+          url: this.tsUrlList[index],
           type: 'file',
           success: (file) => {
             this.errorNum--
