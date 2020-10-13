@@ -91,7 +91,7 @@
   .m-p-input-container input {
     flex: 1;
     margin-bottom: 30px;
-    margin-right: 20px;
+    margin-right: 12px;
     display: block;
     width: 280px;
     padding: 16px;
@@ -106,7 +106,7 @@
     display: inline-block;
     height: 60px;
     line-height: 60px;
-    font-size: 30px;
+    font-size: 24px;
     color: white;
     cursor: pointer;
     border-radius: 4px;
@@ -115,11 +115,14 @@
     opacity: 1;
     transition: 0.3s all;
   }
+  .m-p-input-container div:last-child {
+    margin-left: 10px;
+  }
   .m-p-input-container div:hover {
     opacity: 0.9;
   }
   .m-p-input-container div {
-    width: 240px;
+    width: 200px;
   }
   .m-p-input-container .disable {
     cursor: not-allowed;
@@ -143,7 +146,6 @@
   .m-p-tips p {
     width: 100px;
     display: inline-block;
-
   }
   .m-p-segment {
     text-align: left;
@@ -168,7 +170,7 @@
     cursor: pointer;
     background-color: #DC5350;
   }
-  .m-p-cross {
+  .m-p-cross, .m-p-final {
     display: inline-block;
     width: 100%;
     height: 50px;
@@ -181,6 +183,10 @@
     background-color: #3D8AC7;
     opacity: 1;
     transition: 0.3s all;
+  }
+  .m-p-final {
+    margin-top: 10px;
+    text-decoration: none;
   }
   .m-p-force, .m-p-retry {
     position: absolute;
@@ -215,13 +221,15 @@
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
 
   <!--文件载入-->
-  <div class="m-p-temp-url">测试连接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
+  <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
     <input type="text" v-model="url" accept=".ttf" :disable="downloading" placeholder="请输入 m3u8 链接">
-    <div class="" @click="getM3U8" :class="{'disable':downloading}">解析下载</div>
+    <div class="" v-if="!downloading || !isGetMP4" @click="getM3U8" :class="{'disable':downloading}">原格式下载</div>
+    <div class="" v-if="!downloading || isGetMP4" @click="getMP4" :class="{'disable':downloading}">转码为MP4下载</div>
   </section>
 
   <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
+  <a class="m-p-final" target="_blank" href="https://segmentfault.com/a/1190000025182822">下载的视频看不了？试试这个终结解决方案「无差别视频提取工具」</a>
 
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
@@ -247,7 +255,8 @@ var _hmt = _hmt || [];
 </script>
 <!--vue 前端框架-->
 <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
-<script src="./aes-decryptor.js"></script>
+<script src="http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js"></script>
+<script src="http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js"></script>
 
 <script>
 // script注入
@@ -258,6 +267,8 @@ new Vue({
     return {
       url: '', // 在线链接
       tips: 'm3u8 视频在线提取工具', // 顶部提示
+      isGetMP4: false, // 是否转码为 MP4 下载
+      durationSecond: 0, // 视频持续时长
       downloading: false, // 是否下载中
       beginTime: '', // 开始下载的时间
       errorNum: 0, // 错误数
@@ -355,6 +366,12 @@ new Vue({
       }
     },
 
+    // 解析为 mp4 下载
+    getMP4() {
+      this.isGetMP4 = true
+      this.getM3U8()
+    },
+
     // 获取在线文件
     getM3U8() {
       if (!this.url) {
@@ -378,7 +395,10 @@ new Vue({
           this.tsUrlList = []
 
           // 提取 ts 视频片段地址
-          m3u8Str.split('\n').forEach((item, index) => {
+          m3u8Str.split('\n').forEach((item) => {
+            if (this.isGetMP4 && item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
+              this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
+            }
             if (item.toLowerCase().indexOf('.ts') > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
@@ -415,6 +435,7 @@ new Vue({
 
     // 获取AES配置
     getAES() {
+      alert('视频被 AES 加密，点击确认，进行视频解码')
       this.ajax({
         url: this.aesConf.uri,
         success: (key) => {
@@ -447,14 +468,7 @@ new Vue({
             url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
-              this.mediaFileList[index] = this.aesConf.uri ? this.aesDecrypt(file, index) : file // 判断文件是否需要解密
-              this.finishList[index].status = 'finish'
-              this.finishNum++
-              if (this.finishNum === this.tsUrlList.length) {
-                this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
-              } else if (this.downloadIndex < this.tsUrlList.length) {
-                download()
-              }
+              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
             },
             fail: () => {
               this.errorNum++
@@ -475,6 +489,44 @@ new Vue({
       }
     },
 
+    // 处理 ts 片段，AES 解密、mp4 转码
+    dealTS(file, index, callback) {
+      const data = this.aesConf.uri ? this.aesDecrypt(file, index) : file
+      this.conversionMp4(data, index, (afterData) => { // mp4 转码
+        this.mediaFileList[index] = afterData // 判断文件是否需要解密
+        this.finishList[index].status = 'finish'
+        this.finishNum++
+        if (this.finishNum === this.tsUrlList.length) {
+          this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
+        }
+        callback && callback()
+      })
+    },
+
+    // 转码为 mp4
+    conversionMp4(data, index, callback) {
+      if (this.isGetMP4) {
+        let transmuxer = new muxjs.Transmuxer({
+          keepOriginalTimestamps: true,
+          duration: parseInt(this.durationSecond),
+        });
+        transmuxer.on('data', segment => {
+          if (index === 0) {
+            let data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
+            data.set(segment.initSegment, 0);
+            data.set(segment.data, segment.initSegment.byteLength);
+            callback(data.buffer)
+          } else {
+            callback(segment.data)
+          }
+        })
+        transmuxer.push(new Uint8Array(data));
+        transmuxer.flush();
+      } else {
+        callback(data, index)
+      }
+    },
+
     // 重新下载某个片段
     retry(index) {
       if (this.finishList[index].status === 'error') {
@@ -484,12 +536,7 @@ new Vue({
           type: 'file',
           success: (file) => {
             this.errorNum--
-            this.mediaFileList[index] = this.aesConf.uri ? this.aesDecrypt(file, index) : file
-            this.finishList[index].status = 'finish'
-            this.finishNum++
-            if (this.finishNum === this.tsUrlList.length) {
-              this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
-            }
+            this.dealTS(file, index)
           },
           fail: () => {
             this.finishList[index].status = 'error'
@@ -511,11 +558,17 @@ new Vue({
     },
 
     // 下载整合后的TS文件
-    downloadFile(fileDataList, fileName, fileType) {
+    downloadFile(fileDataList, fileName) {
       this.tips = 'ts 碎片整合中，请留意浏览器下载'
-      const fileBlob = new Blob(fileDataList, { type: 'video/MP2T' }) // 创建一个Blob对象，并设置文件的 MIME 类型
-      const a = document.createElement('a')
-      a.download = fileName + '.' + fileType
+      let fileBlob = null
+      let a = document.createElement('a')
+      if (this.isGetMP4) {
+        fileBlob = new Blob(fileDataList, { type: 'video/mp4' }) // 创建一个Blob对象，并设置文件的 MIME 类型
+        a.download = fileName + '.mp4'
+      } else {
+        fileBlob = new Blob(fileDataList, { type: 'video/MP2T' }) // 创建一个Blob对象，并设置文件的 MIME 类型
+        a.download = fileName + '.ts'
+      }
       a.href = URL.createObjectURL(fileBlob)
       a.style.display = 'none'
       document.body.appendChild(a)
@@ -542,7 +595,7 @@ new Vue({
     // 强制下载现有片段
     forceDownload() {
       if (this.mediaFileList.length) {
-        this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'), 'ts')
+        this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
       } else {
         alert('当前无已下载片段')
       }
@@ -580,6 +633,7 @@ new Vue({
           $section.style.height = '800px'
           $section.style.top = '0'
           $section.style.left = '0'
+          $section.style.position = 'relative'
           $section.style.zIndex = '9999'
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
