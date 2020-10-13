@@ -38,19 +38,19 @@
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/03.jpeg)
 - 找到目标m3u8文件，查看文件内容，是否符合格式。
     - 如下为索引文件，不是真正的视频 m3u8 文件
-    
+
         ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/04.jpeg)
     - 一般内容有许多 ts 字眼的文件才是我们需要的视频 m3u8 文件。
-    
+
          ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/05.jpeg)
 - 拷贝这个 m3u8 文件的链接。
-    
+
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/06.jpeg)
 - 打开工具页面，输入链接，点击「解析下载」。
 - 出现片段 Icon，则证明操作成功，耐心等待视频下载。
 - 片段全部下载成功，将触发浏览器自动下载，下载整合后的完整视频。
 - 如果有片段下载失败，则点击对应片段，或点击「重新下载错误片段」按钮。重新下载错误片段。
-    
+
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/08.jpeg)
 
 ### 异常情况
@@ -58,17 +58,17 @@
   - 一般由于跨域造成。
   - 点击「跨域复制代码」按钮。
   - 打开视频目标网页的「开发者工具界面」，找到 console 栏。
-  
+
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/10.jpeg)
   - 粘贴刚刚复制的内容，回车。
   - 滚动页面到底部，发现工具显示在底部。然后在注入的工具中正常使用。
-    
+
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/11.jpeg)
 
 【下载后的视频资源不可看】
   - 网站对视频源进行了加密操作。不同的视频网站有不同的算法操作。无法通用处理。
   - 一般网站不会有这种情况。爱奇艺，腾讯等大视频网站才会有该安全措施。
-    
+
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/12.jpeg)
 
 ### 实现思路
@@ -114,6 +114,13 @@
 
 ### [源码链接](https://github.com/Momo707577045/m3u8-downloader/blob/master/index.html)
 
+### AES 常规解密功能
+- 借助「aes-decryptor.js」，该文件来至 [hls.js](https://github.com/video-dev/hls.js)
+
+### MP4 转码功能
+- 借助「mux-mp4.js」，源码来至 [mux.js](https://github.com/videojs/mux.js#mp4)
+- 但 mux.js 存在一个无法计算视频长度的 bug
+- 本人已 fork 该项目，并修复该 bug，修复后的项目[链接在这里](https://github.com/Momo707577045/mux.js)
 
 ### 完结撒花，感谢阅读。
 ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)
