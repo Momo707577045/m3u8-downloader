@@ -75,6 +75,115 @@
   .m-p-other {
     bottom: 30px;
   }
+  /*广告*/
+  .m-p-refer {
+    position: absolute;
+    left: 50px;
+    bottom: 50px;
+  }
+  .m-p-refer .text {
+    position: absolute;
+    top: -80px;
+    left: -40px;
+    animation-name: upAnimation;
+    transform-origin: center bottom;
+    animation-duration: 2s;
+    animation-fill-mode: both;
+    animation-iteration-count: infinite;
+    animation-delay: .5s;
+  }
+  .m-p-refer .close {
+    display: block;
+    position: absolute;
+    top: -110px;
+    right: -50px;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    z-index: 3;
+    transition: 0.3s all;
+    background-size: 30px 30px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-image: url(./imgs/close.png);
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .m-p-refer .close:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  .m-p-refer .link{
+    border-radius: 4px;
+    text-decoration: none;
+    background-color: #4E84E6;
+    transition: 0.3s all;
+  }
+  .m-p-refer .link:hover {
+    top: -10px;
+    color: #333333;
+    border: 1px solid transparent;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 2px 11px 20px 0 rgba(0, 0, 0, 0.6);
+  }
+  @keyframes upAnimation {
+    0% {
+      transform: rotate(0deg);
+      transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+    }
+
+    10% {
+      transform: rotate(-12deg);
+      transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+    }
+
+    20% {
+      transform: rotate(12deg);
+      transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+    }
+
+    28% {
+      transform: rotate(-10deg);
+      transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+    }
+
+    36% {
+      transform: rotate(10deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    42% {
+      transform: rotate(-8deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    48% {
+      transform: rotate(8deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    52% {
+      transform: rotate(-4deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    56% {
+      transform: rotate(4deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    60% {
+      transform: rotate(0deg);
+      transition-timing-function: cubic-bezier(0.755, .5, .855, .06)
+    }
+
+    100% {
+      transform: rotate(0deg);
+      transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+    }
+  }
   /*顶部信息录入*/
   .m-p-temp-url {
     padding-top: 50px;
@@ -220,6 +329,13 @@
   <a class="m-p-github" target="_blank" href="https://github.com/Momo707577045/m3u8-downloader">github</a>
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
 
+  <!--广告-->
+  <a v-if="isShowRefer" class="m-p-refer" target="_blank" href="https://segmentfault.com/a/1190000024416860">
+    <img src="./imgs/001.png" class="link">
+    <img src="./imgs/003.png" class="text">
+    <i class="close" @click.prevent="isShowRefer=false"/>
+  </a>
+
   <!--文件载入-->
   <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
@@ -269,6 +385,7 @@ new Vue({
       tips: 'm3u8 视频在线提取工具', // 顶部提示
       isGetMP4: false, // 是否转码为 MP4 下载
       durationSecond: 0, // 视频持续时长
+      isShowRefer: true, // 是否显示推送
       downloading: false, // 是否下载中
       beginTime: '', // 开始下载的时间
       errorNum: 0, // 错误数
