@@ -406,19 +406,8 @@ new Vue({
         decryptor: null, // 解码器对象
 
         stringToBuffer: function (str) {
-          let val = ''
-          for (let i = 0; i < str.length; i++) {
-            if (val === '') {
-              val = str.charCodeAt(i).toString(16)
-            } else {
-              val += ',' + str.charCodeAt(i).toString(16)
-            }
-          }
-
-          // 将16进制转化为ArrayBuffer
-          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function (h) {
-            return parseInt(h, 16)
-          })).buffer
+          var enc = new TextEncoder();
+          return enc.encode(str);
         },
       },
     }
