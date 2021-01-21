@@ -376,6 +376,11 @@ var _hmt = _hmt || [];
 
 <script>
 // script注入
+async function loadSomeJS(JSURL)
+{
+    return await (await fetch(JSURL)).text()
+}
+
 new Vue({
   el: '#m-app',
 
@@ -764,6 +769,12 @@ new Vue({
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
           document.body.appendChild($vue);
+          let libBaseURL = "${location.href}";
+          (async () =>
+          {
+              eval(await loadSomeJS(libBaseURL + "aes-decryptor.js"))
+              eval(await loadSomeJS(libBaseURL + "mux-mp4.js"))
+          })();
           alert('注入成功，请滚动到页面底部')
           `;
             this.copyToClipboard(codeStr);
