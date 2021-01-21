@@ -376,11 +376,6 @@ var _hmt = _hmt || [];
 
 <script>
 // script注入
-loadSomeJS = async function (JSURL)
-{
-    return await (await fetch(JSURL)).text()
-}
-
 new Vue({
   el: '#m-app',
 
@@ -769,6 +764,10 @@ new Vue({
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
           document.body.appendChild($vue);
+          async function loadSomeJS (JSURL)
+          {
+              return await (await fetch(JSURL)).text()
+          }
           let libBaseURL = "${location.href}";
           (async () =>
           {
