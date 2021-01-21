@@ -771,8 +771,8 @@ new Vue({
           let libBaseURL = "${location.href}";
           (async () =>
           {
-              eval(await loadSomeJS(libBaseURL + "aes-decryptor.js"))
-              eval(await loadSomeJS(libBaseURL + "mux-mp4.js"))
+              window.eval(await loadSomeJS(libBaseURL + "aes-decryptor.js"))
+              window.eval(await loadSomeJS(libBaseURL + "mux-mp4.js"))
           })();
           alert('注入成功，请滚动到页面底部')
           `;
