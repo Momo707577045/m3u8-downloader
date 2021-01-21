@@ -576,25 +576,31 @@ new Vue({
     // 下载分片
     downloadTS() {
       this.tips = 'ts 视频碎片下载中，请稍后'
-      let download = () => {
+      let download = async () => {
         console.log("loadding")
         let index = this.downloadIndex
         this.downloadIndex++
         if (this.finishList[index] && this.finishList[index].status === '') {
-          this.ajax({
-            url: this.tsUrlList[index],
-            type: 'file',
-            success: (file) => {
-              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
-            },
-            fail: () => {
-              this.errorNum++
-              this.finishList[index].status = 'error'
-              if (this.downloadIndex < this.tsUrlList.length) {
-                download()
+          try
+          {
+            let tempDownloader = await fetch(
+              this.tsUrlList[index],
+              {
+              method: 'get',
+              responseType: 'arraybuffer'
               }
+            );
+            let file = await tempDownloader.arrayBuffer();
+            this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
+          }catch(e)
+          {
+            console.log(e);
+            this.errorNum++
+            this.finishList[index].status = 'error'
+            if (this.downloadIndex < this.tsUrlList.length) {
+              download()
             }
-          })
+          }
         } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
           download()
         }
