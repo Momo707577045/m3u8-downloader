@@ -376,7 +376,7 @@ var _hmt = _hmt || [];
 
 <script>
 // script注入
-async function loadSomeJS(JSURL)
+loadSomeJS = async function (JSURL)
 {
     return await (await fetch(JSURL)).text()
 }
