@@ -371,11 +371,15 @@ var _hmt = _hmt || [];
 </script>
 <!--vue 前端框架-->
 <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
-<script src="http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js"></script>
-<script src="http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js"></script>
+<script src="aes-decryptor.js"></script>
+<script src="mux-mp4.js"></script>
 
 <script>
 // script注入
+window.loadSomeJS = async function (JSURL)
+{
+    return await (await fetch(JSURL)).text()
+};
 new Vue({
   el: '#m-app',
 
@@ -402,19 +406,8 @@ new Vue({
         decryptor: null, // 解码器对象
 
         stringToBuffer: function (str) {
-          let val = ''
-          for (let i = 0; i < str.length; i++) {
-            if (val === '') {
-              val = str.charCodeAt(i).toString(16)
-            } else {
-              val += ',' + str.charCodeAt(i).toString(16)
-            }
-          }
-
-          // 将16进制转化为ArrayBuffer
-          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function (h) {
-            return parseInt(h, 16)
-          })).buffer
+          var enc = new TextEncoder();
+          return enc.encode(str);
         },
       },
     }
@@ -551,21 +544,35 @@ new Vue({
     },
 
     // 获取AES配置
-    getAES() {
+    async getAES() {
       alert('视频被 AES 加密，点击确认，进行视频解码')
-      this.ajax({
-        url: this.aesConf.uri,
-        success: (key) => {
-          this.aesConf.key = this.aesConf.stringToBuffer(key)
-          this.aesConf.decryptor = new AESDecryptor()
-          this.aesConf.decryptor.constructor()
-          this.aesConf.decryptor.expandKey(this.aesConf.key);
-          this.downloadTS()
-        },
-        fail: () => {
-          this.alertError('AES 配置不正确')
+      let aseConfURL = this.aesConf.uri;
+      this.aesConf.uri = prompt("请确认AES key的下载链接，看情况修改！或输入真实解码key的Uint8Array的数组(数字加英文逗号)", aseConfURL);
+      
+      try
+      {
+        if(this.aesConf.uri.indexOf("http") == -1)
+        {
+          this.aesConf.key = new Uint8Array(this.aesConf.uri.split(",")).buffer
         }
-      })
+        else
+        {
+          let tempDownloader = await fetch(this.aesConf.uri, {
+            method: 'get',
+            responseType: 'arraybuffer'
+          })
+          this.aesConf.key = await tempDownloader.arrayBuffer()
+        }
+        this.aesConf.decryptor = new AESDecryptor()
+        this.aesConf.decryptor.constructor()
+        this.aesConf.decryptor.expandKey(this.aesConf.key);
+        console.log("start");
+        this.downloadTS()
+      }catch(e)
+      {
+        console.log(e);
+        this.alertError('AES 配置不正确')
+      }
     },
 
     // ts 片段的 AES 解码
@@ -577,24 +584,31 @@ new Vue({
     // 下载分片
     downloadTS() {
       this.tips = 'ts 视频碎片下载中，请稍后'
-      let download = () => {
+      let download = async () => {
+        console.log("loadding")
         let index = this.downloadIndex
         this.downloadIndex++
         if (this.finishList[index] && this.finishList[index].status === '') {
-          this.ajax({
-            url: this.tsUrlList[index],
-            type: 'file',
-            success: (file) => {
-              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
-            },
-            fail: () => {
-              this.errorNum++
-              this.finishList[index].status = 'error'
-              if (this.downloadIndex < this.tsUrlList.length) {
-                download()
+          try
+          {
+            let tempDownloader = await fetch(
+              this.tsUrlList[index],
+              {
+              method: 'get',
+              responseType: 'arraybuffer'
               }
+            );
+            let file = await tempDownloader.arrayBuffer();
+            this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
+          }catch(e)
+          {
+            console.log(e);
+            this.errorNum++
+            this.finishList[index].status = 'error'
+            if (this.downloadIndex < this.tsUrlList.length) {
+              download()
             }
-          })
+          }
         } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
           download()
         }
@@ -726,7 +740,9 @@ new Vue({
     },
 
     // 拷贝本页面本身，解决跨域问题
-    copyCode() {
+    async copyCode() {
+      let aseCodeString = await loadSomeJS(location.href + "aes-decryptor.js");
+      let muxMp4CodeString = await loadSomeJS(location.href + "mux-mp4.js");
       if (this.tips !== '代码下载中，请稍后' && this.tips !== '复制成功，打开视频网页控制台，注入本代码') {
         this.tips = '代码下载中，请稍后';
         this.ajax({
@@ -737,7 +753,6 @@ new Vue({
             let script = fileList[1] + fileList[2];
             script = script.split('// script注入');
             script = script[1] + script[2];
-
             if (this.url) {
               script = script.replace(`url: '', // 在线链接`, `url: '${this.url}',`);
             }
@@ -762,6 +777,9 @@ new Vue({
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
           document.body.appendChild($vue);
+          
+          ${aseCodeString};
+          ${muxMp4CodeString};
           alert('注入成功，请滚动到页面底部')
           `;
             this.copyToClipboard(codeStr);
