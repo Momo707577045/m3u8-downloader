@@ -547,14 +547,24 @@ new Vue({
     async getAES() {
       alert('视频被 AES 加密，点击确认，进行视频解码')
       let aseConfURL = this.aesConf.uri;
-      this.aesConf.uri = prompt("请确认AES key的下载链接，看情况修改！", aseConfURL);
+      // this.aesConf.uri = prompt("请确认AES key的下载链接，看情况修改！", aseConfURL);
+      
       try
       {
-        let tempDownloader = await fetch(this.aesConf.uri, {
-          method: 'get',
-          responseType: 'arraybuffer'
-        })
-        this.aesConf.key = await tempDownloader.arrayBuffer()
+        this.aesConf.key = new Uint8Array( [38, 149, 54, 208, 103, 102, 218, 99, 68, 52, 130, 84, 137, 58, 239, 162]).buffer
+        // if(this.aesConf.uri.indexOf("http") == -1)
+        // {
+        //   this.aesConf.key = this.aesConf.stringToBuffer(this.aesConf.uri).buffer;
+        //   console.log(this.aesConf.key);
+        // }
+        // else
+        // {
+        //   let tempDownloader = await fetch(this.aesConf.uri, {
+        //     method: 'get',
+        //     responseType: 'arraybuffer'
+        //   })
+        //   this.aesConf.key = await tempDownloader.arrayBuffer()
+        // }
         this.aesConf.decryptor = new AESDecryptor()
         this.aesConf.decryptor.constructor()
         this.aesConf.decryptor.expandKey(this.aesConf.key);
