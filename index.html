@@ -115,7 +115,7 @@
   .m-p-refer .close:hover {
     background-color: rgba(0, 0, 0, 0.8);
   }
-  .m-p-refer .link{
+  .m-p-refer .link {
     border-radius: 4px;
     text-decoration: none;
     background-color: #4E84E6;
@@ -339,7 +339,7 @@
   <!--文件载入-->
   <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
-    <input type="text" v-model="url" accept=".ttf" :disable="downloading" placeholder="请输入 m3u8 链接">
+    <input type="text" v-model="url" :disable="downloading" placeholder="请输入 m3u8 链接">
     <div class="" v-if="!downloading || !isGetMP4" @click="getM3U8" :class="{'disable':downloading}">原格式下载</div>
     <div class="" v-if="!downloading || isGetMP4" @click="getMP4" :class="{'disable':downloading}">转码为MP4下载</div>
   </section>
@@ -362,7 +362,7 @@
 
 <script>
 var _hmt = _hmt || [];
-(function () {
+(function() {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
   var s = document.getElementsByTagName("script")[0];
@@ -401,7 +401,7 @@ new Vue({
         key: '', // 秘钥
         decryptor: null, // 解码器对象
 
-        stringToBuffer: function (str) {
+        stringToBuffer: function(str) {
           let val = ''
           for (let i = 0; i < str.length; i++) {
             if (val === '') {
@@ -412,7 +412,7 @@ new Vue({
           }
 
           // 将16进制转化为ArrayBuffer
-          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function (h) {
+          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function(h) {
             return parseInt(h, 16)
           })).buffer
         },
@@ -433,7 +433,7 @@ new Vue({
     // 获取链接中携带的资源链接
     getSource() {
       let { href } = location
-      if (href.indexOf('?source=')) {
+      if (href.indexOf('?source=') > -1) {
         this.url = href.split('?source=')[1]
       }
     },
@@ -453,7 +453,7 @@ new Vue({
         xhr.responseType = 'arraybuffer';
       }
 
-      xhr.onreadystatechange = function () {
+      xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           let status = xhr.status;
           if (status >= 200 && status < 300) {
@@ -527,9 +527,9 @@ new Vue({
 
           // 检测视频 AES 加密
           if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
-            this.aesConf.method = (m3u8Str.match(/(.*METHOD=([^,]+))/) || ['', '', ''])[2]
+            this.aesConf.method = (m3u8Str.match(/(.*METHOD=([^,\s]+))/) || ['', '', ''])[2]
             this.aesConf.uri = (m3u8Str.match(/(.*URI="([^"]+))"/) || ['', '', ''])[2]
-            this.aesConf.iv = (m3u8Str.match(/(.*IV=([^,]+))/) || ['', '', ''])[2]
+            this.aesConf.iv = (m3u8Str.match(/(.*IV=([^,\s]+))/) || ['', '', ''])[2]
             this.aesConf.iv = this.aesConf.iv ? this.aesConf.stringToBuffer(this.aesConf.iv) : ''
             this.aesConf.uri = this.applyURL(this.aesConf.uri, this.url)
 
@@ -554,9 +554,12 @@ new Vue({
     getAES() {
       alert('视频被 AES 加密，点击确认，进行视频解码')
       this.ajax({
+        type: 'file',
         url: this.aesConf.uri,
         success: (key) => {
-          this.aesConf.key = this.aesConf.stringToBuffer(key)
+          // console.log('getAES', key)
+          // this.aesConf.key = this.aesConf.stringToBuffer(key)
+          this.aesConf.key = key
           this.aesConf.decryptor = new AESDecryptor()
           this.aesConf.decryptor.constructor()
           this.aesConf.decryptor.expandKey(this.aesConf.key);
@@ -571,7 +574,7 @@ new Vue({
     // ts 片段的 AES 解码
     aesDecrypt(data, index) {
       let iv = this.aesConf.iv || new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, index])
-      return this.aesConf.decryptor.decrypt(data, 0, iv.buffer, true)
+      return this.aesConf.decryptor.decrypt(data, 0, iv.buffer || iv, true)
     },
 
     // 下载分片
