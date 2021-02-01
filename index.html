@@ -340,8 +340,12 @@
   <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
     <input type="text" v-model="url" :disable="downloading" placeholder="请输入 m3u8 链接">
-    <div class="" v-if="!downloading || !isGetMP4" @click="getM3U8" :class="{'disable':downloading}">原格式下载</div>
-    <div class="" v-if="!downloading || isGetMP4" @click="getMP4" :class="{'disable':downloading}">转码为MP4下载</div>
+    <template v-if="!downloading">
+      <div v-if="!isGetMP4" @click="getM3U8">原格式下载</div>
+      <div v-if="isGetMP4" @click="getMP4">转码为MP4下载</div>
+    </template>
+    <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">下载完成</div>
+    <div v-else @click="togglePause" >{{ isPause ? '恢复下载' : '暂停下载' }}</div>
   </section>
 
   <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
@@ -383,6 +387,7 @@ new Vue({
     return {
       url: '', // 在线链接
       tips: 'm3u8 视频在线提取工具', // 顶部提示
+      isPause: false, // 是否暂停下载
       isGetMP4: false, // 是否转码为 MP4 下载
       durationSecond: 0, // 视频持续时长
       isShowRefer: true, // 是否显示推送
@@ -581,6 +586,7 @@ new Vue({
     downloadTS() {
       this.tips = 'ts 视频碎片下载中，请稍后'
       let download = () => {
+        let isPause = this.isPause // 使用另一个变量来保持下载前的暂停状态，避免回调后没修改
         let index = this.downloadIndex
         this.downloadIndex++
         if (this.finishList[index] && this.finishList[index].status === '') {
@@ -588,18 +594,18 @@ new Vue({
             url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
-              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && download())
+              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && !isPause && download())
             },
             fail: () => {
               this.errorNum++
               this.finishList[index].status = 'error'
               if (this.downloadIndex < this.tsUrlList.length) {
-                download()
+                !isPause && download()
               }
             }
           })
         } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
-          download()
+          !isPause && download()
         }
       }
 
@@ -645,6 +651,12 @@ new Vue({
       } else {
         callback(data, index)
       }
+    },
+
+    // 暂停与恢复
+    togglePause() {
+      this.isPause = !this.isPause
+      !this.isPause && this.retryAll()
     },
 
     // 重新下载某个片段
