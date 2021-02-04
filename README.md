@@ -123,7 +123,7 @@
 - 本人已 fork 该项目，并修复该 bug，修复后的项目[链接在这里](https://github.com/Momo707577045/mux.js)
 
 ### 完结撒花，感谢阅读。
-![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)
+![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)。
 
 
 
