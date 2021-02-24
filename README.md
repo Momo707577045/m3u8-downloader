@@ -122,6 +122,22 @@
 - 但 mux.js 存在一个无法计算视频长度的 bug
 - 本人已 fork 该项目，并修复该 bug，修复后的项目[链接在这里](https://github.com/Momo707577045/mux.js)
 
+### 第三方接入
+- 在 url 中通过 source 参数拼接下载地址即可，如：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8```
+- 系统将自动解析该参数
+
+    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/16.jpeg)
+
+
+### 油猴插件
+
+![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/15.jpeg)
+
+- 「跳转下载」即新开页面，打开本工具页面，自动携带并解析目标地址
+- 「注入下载」为解决跨域而生，直接将代码注入到当前视频网站，进行视频下载
+- [插件地址点这里](https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader)
+- 不一定能用，但可以试试
+
 ### 完结撒花，感谢阅读。
 ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)
 

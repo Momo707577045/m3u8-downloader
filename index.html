@@ -36,10 +36,9 @@
     text-align: center;
     font-weight: bold;
   }
-  .m-p-other, .m-p-github {
+  .m-p-other, .m-p-tamper, .m-p-github {
     position: fixed;
     right: 50px;
-    bottom: 70px;
     background-color: #eff3f6;
     background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
     color: #24292e;
@@ -69,11 +68,17 @@
     background-color: #eff3f6;
     background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
   }
-  .m-p-github:hover, .m-p-other:hover, .m-p-help {
+  .m-p-github:hover, .m-p-other:hover, .m-p-tamper:hover, .m-p-help:hover {
     opacity: 0.9;
   }
   .m-p-other {
     bottom: 30px;
+  }
+  .m-p-github {
+    bottom: 110px;
+  }
+  .m-p-tamper {
+    bottom: 70px;
   }
   /*广告*/
   .m-p-refer {
@@ -326,6 +331,7 @@
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
   <a class="m-p-help" target="_blank" href="https://segmentfault.com/a/1190000021847172">?</a>
+  <a class="m-p-tamper" target="_blank" href="https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader">油猴插件</a>
   <a class="m-p-github" target="_blank" href="https://github.com/Momo707577045/m3u8-downloader">github</a>
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
 
@@ -341,11 +347,11 @@
   <section class="m-p-input-container">
     <input type="text" v-model="url" :disable="downloading" placeholder="请输入 m3u8 链接">
     <template v-if="!downloading">
-      <div v-if="!isGetMP4" @click="getM3U8">原格式下载</div>
-      <div v-if="isGetMP4" @click="getMP4">转码为MP4下载</div>
+      <div @click="getM3U8">原格式下载</div>
+      <div @click="getMP4">转码为MP4下载</div>
     </template>
     <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">下载完成</div>
-    <div v-else @click="togglePause" >{{ isPause ? '恢复下载' : '暂停下载' }}</div>
+    <div v-else @click="togglePause">{{ isPause ? '恢复下载' : '暂停下载' }}</div>
   </section>
 
   <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
@@ -407,19 +413,7 @@ new Vue({
         decryptor: null, // 解码器对象
 
         stringToBuffer: function(str) {
-          let val = ''
-          for (let i = 0; i < str.length; i++) {
-            if (val === '') {
-              val = str.charCodeAt(i).toString(16)
-            } else {
-              val += ',' + str.charCodeAt(i).toString(16)
-            }
-          }
-
-          // 将16进制转化为ArrayBuffer
-          return new Uint8Array(val.match(/[\da-f]{2}/gi).map(function(h) {
-            return parseInt(h, 16)
-          })).buffer
+          return new TextEncoder().encode(str)
         },
       },
     }
