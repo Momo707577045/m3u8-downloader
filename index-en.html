@@ -287,8 +287,7 @@
   .m-p-cross, .m-p-final {
     display: inline-block;
     width: 100%;
-    height: 50px;
-    line-height: 50px;
+    padding: 10px 20px;
     font-size: 20px;
     color: white;
     cursor: pointer;
@@ -331,9 +330,9 @@
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
   <a class="m-p-help" target="_blank" href="https://segmentfault.com/a/1190000021847172">?</a>
-  <a class="m-p-tamper" target="_blank" href="https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader">油猴插件</a>
+  <a class="m-p-tamper" target="_blank" href="https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader">tamperMonkey plugin</a>
   <a class="m-p-github" target="_blank" href="https://github.com/Momo707577045/m3u8-downloader">github</a>
-  <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
+  <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">other efficiency tools</a>
 
   <!--广告-->
   <a v-if="isShowRefer" class="m-p-refer" target="_blank" href="https://segmentfault.com/a/1190000024416860">
@@ -343,26 +342,26 @@
   </a>
 
   <!--文件载入-->
-  <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
+  <div class="m-p-temp-url">test url：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
-    <input type="text" v-model="url" :disable="downloading" placeholder="请输入 m3u8 链接">
+    <input type="text" v-model="url" :disable="downloading" placeholder="Please input m3u8 url">
     <template v-if="!downloading">
-      <div @click="getM3U8">原格式下载</div>
-      <div @click="getMP4">转码为MP4下载</div>
+      <div @click="getM3U8">download in ts</div>
+      <div @click="getMP4">download in mp4</div>
     </template>
-    <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">下载完成</div>
-    <div v-else @click="togglePause">{{ isPause ? '恢复下载' : '暂停下载' }}</div>
+    <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">Finish</div>
+    <div v-else @click="togglePause">{{ isPause ? 'Resume' : 'Pause' }}</div>
   </section>
 
-  <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
-  <a class="m-p-final" target="_blank" href="https://segmentfault.com/a/1190000025182822">下载的视频看不了？试试这个终结解决方案「无差别视频提取工具」，有配套「油猴」插件啦！！！</a>
+  <div class="m-p-cross" @click="copyCode">When the resource cannot be downloaded and cross domain restriction occurs, open the console on the video source page, inject code to solve the problem, and click this button to copy the code</div>
+  <a class="m-p-final" target="_blank" href="https://segmentfault.com/a/1190000025182822">Can't watch the downloaded video? Try the terminal solution "undifferentiated video extraction tool", with the "tamperMonkey" plugin!!!</a>
 
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
-    <div class="m-p-retry" v-if="errorNum && downloadIndex >= tsUrlList.length" @click="retryAll">重新下载错误片段</div>
-    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
-    <div class="m-p-tips">碎片总量：{{ tsUrlList.length }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / tsUrlList.length * 100).toFixed(2) }}%</div>
-    <div class="m-p-tips">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
+    <div class="m-p-retry" v-if="errorNum && downloadIndex >= tsUrlList.length" @click="retryAll">Retry error fragment</div>
+    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">Download finished fragment</div>
+    <div class="m-p-tips">sum：{{ tsUrlList.length }}，finish：{{ finishNum }}，error：{{ errorNum }}，percentage：{{ (finishNum / tsUrlList.length * 100).toFixed(2) }}%</div>
+    <div class="m-p-tips">when the icon turn red, it means error, click it to retry</div>
     <section class="m-p-segment">
       <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
     </section>
@@ -392,7 +391,7 @@ new Vue({
   data() {
     return {
       url: '', // 在线链接
-      tips: 'm3u8 视频在线提取工具', // 顶部提示
+      tips: 'm3u8 downloader in web', // 顶部提示
       isPause: false, // 是否暂停下载
       isGetMP4: false, // 是否转码为 MP4 下载
       durationSecond: 0, // 视频持续时长
@@ -422,8 +421,8 @@ new Vue({
   created() {
     this.getSource();
     window.addEventListener('keyup', this.onKeyup)
-    if (navigator.language.indexOf('zh') === -1) { // 国外
-      location.href = './index-en.html'
+    if (navigator.language.indexOf('zh') > -1) { // 国内
+      location.href = './index.html'
     }
   },
 
@@ -494,19 +493,19 @@ new Vue({
     // 获取在线文件
     getM3U8() {
       if (!this.url) {
-        alert('请输入链接')
+        alert('Please input url')
         return
       } else if (this.url.toLowerCase().indexOf('m3u8') === -1) {
-        alert('链接有误，请重新输入')
+        alert('The url is error, please  re-enter')
         return
       } else if (this.downloading) {
-        alert('资源下载中，请稍后')
+        alert('downloading，please wait')
         return
       }
 
       this.downloading = true
 
-      this.tips = 'm3u8 文件下载中，请稍后'
+      this.tips = 'm3u8 downloading, please wait'
       this.beginTime = new Date()
       this.ajax({
         url: this.url,
@@ -543,18 +542,18 @@ new Vue({
           } else if (this.tsUrlList.length > 0) { // 如果视频没加密，则直接下载片段，否则先下载秘钥
             this.downloadTS()
           } else {
-            this.alertError('资源为空，请查看链接是否有效')
+            this.alertError('')
           }
         },
         fail: () => {
-          this.alertError('链接不正确，请查看链接是否有效')
+          this.alertError('The resource is empty, please check whether the link is valid')
         }
       })
     },
 
     // 获取AES配置
     getAES() {
-      alert('视频被 AES 加密，点击确认，进行视频解码')
+      alert('The video is encrypted by AES. Click OK to decode the video')
       this.ajax({
         type: 'file',
         url: this.aesConf.uri,
@@ -568,7 +567,7 @@ new Vue({
           this.downloadTS()
         },
         fail: () => {
-          this.alertError('AES 配置不正确')
+          this.alertError('AES is error')
         }
       })
     },
@@ -581,7 +580,7 @@ new Vue({
 
     // 下载分片
     downloadTS() {
-      this.tips = 'ts 视频碎片下载中，请稍后'
+      this.tips = 'ts fragment downloading, please wait'
       let download = () => {
         let isPause = this.isPause // 使用另一个变量来保持下载前的暂停状态，避免回调后没修改
         let index = this.downloadIndex
@@ -688,7 +687,7 @@ new Vue({
 
     // 下载整合后的TS文件
     downloadFile(fileDataList, fileName) {
-      this.tips = 'ts 碎片整合中，请留意浏览器下载'
+      this.tips = 'ts fragment integration, please pay attention to the browser download'
       let fileBlob = null
       let a = document.createElement('a')
       if (this.isGetMP4) {
@@ -726,7 +725,7 @@ new Vue({
       if (this.mediaFileList.length) {
         this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
       } else {
-        alert('当前无已下载片段')
+        alert('There are currently no downloaded fragment')
       }
     },
 
@@ -734,15 +733,15 @@ new Vue({
     alertError(tips) {
       alert(tips)
       this.downloading = false
-      this.tips = 'm3u8 视频在线提取工具';
+      this.tips = 'm3u8 downloader in web';
     },
 
     // 拷贝本页面本身，解决跨域问题
     copyCode() {
-      if (this.tips !== '代码下载中，请稍后' && this.tips !== '复制成功，打开视频网页控制台，注入本代码') {
-        this.tips = '代码下载中，请稍后';
+      if (this.tips !== 'Code downloading, please wait' && this.tips !== 'Copy success, open the video web console, inject this code') {
+        this.tips = 'Code downloading, please wait';
         this.ajax({
-          url: './index.html',
+          url: './index-en.html',
           success: (fileStr) => {
             let fileList = fileStr.split(`<!--vue 前端框架--\>`);
             let dom = fileList[0];
@@ -784,14 +783,11 @@ new Vue({
           document.body.appendChild($vue);
           document.body.appendChild($mp4);
           document.body.appendChild($ase);
-          alert('注入成功，请滚动到页面底部')
+          alert('Injection successful, please scroll to the bottom of the page')
           `;
             this.copyToClipboard(codeStr);
-            this.tips = '复制成功，打开视频网页控制台，注入本代码';
-          },
-          fail: () => {
-            this.alertError('链接不正确，请查看链接是否有效');
-          },
+            this.tips = 'Copy success, open the video web console, inject this code';
+          }
         })
       }
     },
