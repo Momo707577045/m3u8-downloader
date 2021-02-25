@@ -92,6 +92,7 @@
 
 ### 核心代码
 【整合及自动下载】
+
 ```
     // 下载整合后的TS文件
     downloadFile(fileDataList, fileName, fileType) {
@@ -106,6 +107,7 @@
       a.remove()
     },
 ```
+
 是的，涉及新知识点的部分只有上面一小段，其他的都是 JS 的基础应用。
 
 除了 vue.js 文件，本工具代码均包含在 index.html 文件里面。包括换行，一共 540 行代码，其中 css 样式 190 行，html 标签 30 行。JS 逻辑代码 300 行。
@@ -136,7 +138,7 @@
 - 「跳转下载」即新开页面，打开本工具页面，自动携带并解析目标地址
 - 「注入下载」为解决跨域而生，直接将代码注入到当前视频网站，进行视频下载
 - [插件地址点这里](https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader)
-- 不一定能用，但可以试试
+- 不一定能用，但可以试试。不行就用回老方法试试。
 
 ### 完结撒花，感谢阅读。
 ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)

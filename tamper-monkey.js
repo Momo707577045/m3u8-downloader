@@ -5,6 +5,7 @@
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
+// @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
 // @grant        none
 // @run-at document-start
 // ==/UserScript==
@@ -133,6 +134,13 @@
     })
 
     m3u8Append.addEventListener('click', function() {
+      var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
       ajax({
         url: 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html',
         success: (fileStr) => {
