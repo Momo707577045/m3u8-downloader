@@ -36,7 +36,7 @@
     text-align: center;
     font-weight: bold;
   }
-  .m-p-other, .m-p-tamper, .m-p-github {
+  .m-p-other, .m-p-tamper, .m-p-github, .m-p-language {
     position: fixed;
     right: 50px;
     background-color: #eff3f6;
@@ -68,17 +68,20 @@
     background-color: #eff3f6;
     background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
   }
-  .m-p-github:hover, .m-p-other:hover, .m-p-tamper:hover, .m-p-help:hover {
+  .m-p-github:hover, .m-p-other:hover, .m-p-tamper:hover, .m-p-help:hover, .m-p-language:hover {
     opacity: 0.9;
   }
-  .m-p-other {
+  .m-p-language {
     bottom: 30px;
   }
-  .m-p-github {
-    bottom: 110px;
+  .m-p-other {
+    bottom: 70px;
   }
   .m-p-tamper {
-    bottom: 70px;
+    bottom: 110px;
+  }
+  .m-p-github {
+    bottom: 150px;
   }
   /*广告*/
   .m-p-refer {
@@ -334,6 +337,7 @@
   <a class="m-p-tamper" target="_blank" href="https://greasyfork.org/zh-CN/scripts/422237-m3u8-downloader">油猴插件</a>
   <a class="m-p-github" target="_blank" href="https://github.com/Momo707577045/m3u8-downloader">github</a>
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
+  <a class="m-p-language" href="http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index-en.html">English version</a>
 
   <!--广告-->
   <a v-if="isShowRefer" class="m-p-refer" target="_blank" href="https://segmentfault.com/a/1190000024416860">
@@ -422,9 +426,6 @@ new Vue({
   created() {
     this.getSource();
     window.addEventListener('keyup', this.onKeyup)
-    if (navigator.language.indexOf('zh') === -1) { // 国外
-      location.href = './index-en.html'
-    }
   },
 
   beforeDestroy() {
