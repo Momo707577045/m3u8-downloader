@@ -535,9 +535,6 @@ new Vue({
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
-            if (this.isGetMP4 && item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
-              this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
-            }
             if (item.toLowerCase().indexOf('.ts') > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
@@ -563,6 +560,19 @@ new Vue({
             this.rangeDownload.targetSegment = this.rangeDownload.endSegment - this.rangeDownload.startSegment + 1
             this.downloadIndex = this.rangeDownload.startSegment - 1
             this.downloading = true
+          }
+
+          // 获取需要下载的 MP4 视频长度
+          if (this.isGetMP4) {
+            let infoIndex = 0
+            m3u8Str.split('\n').forEach(item => {
+              if (item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
+                infoIndex++
+                if (this.rangeDownload.startSegment <= infoIndex && infoIndex <= this.rangeDownload.endSegment) {
+                  this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
+                }
+              }
+            })
           }
 
           // 检测视频 AES 加密
@@ -654,7 +664,7 @@ new Vue({
     dealTS(file, index, callback) {
       const data = this.aesConf.uri ? this.aesDecrypt(file, index) : file
       this.conversionMp4(data, index, (afterData) => { // mp4 转码
-        this.mediaFileList[index] = afterData // 判断文件是否需要解密
+        this.mediaFileList[index - this.rangeDownload.startSegment + 1] = afterData // 判断文件是否需要解密
         this.finishList[index].status = 'finish'
         this.finishNum++
         if (this.finishNum === this.rangeDownload.targetSegment) {
@@ -672,7 +682,7 @@ new Vue({
           duration: parseInt(this.durationSecond),
         });
         transmuxer.on('data', segment => {
-          if (index === 0) {
+          if (index === this.rangeDownload.startSegment - 1) {
             let data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
             data.set(segment.initSegment, 0);
             data.set(segment.data, segment.initSegment.byteLength);
@@ -684,7 +694,7 @@ new Vue({
         transmuxer.push(new Uint8Array(data));
         transmuxer.flush();
       } else {
-        callback(data, index)
+        callback(data)
       }
     },
 
