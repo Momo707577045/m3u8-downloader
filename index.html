@@ -208,7 +208,6 @@
   .m-p-input-container input {
     flex: 1;
     margin-bottom: 30px;
-    margin-right: 12px;
     display: block;
     width: 280px;
     padding: 16px;
@@ -218,9 +217,16 @@
     color: #444444;
     border: 1px solid #cccccc;
   }
+  .m-p-input-container .range-input {
+    margin-left: 10px;
+    flex: 0 0 100px;
+    width: 100px;
+    box-sizing: border-box;
+  }
   .m-p-input-container div {
     position: relative;
     display: inline-block;
+    margin-left: 10px;
     height: 60px;
     line-height: 60px;
     font-size: 24px;
@@ -231,9 +237,6 @@
     background-color: #3D8AC7;
     opacity: 1;
     transition: 0.3s all;
-  }
-  .m-p-input-container div:last-child {
-    margin-left: 10px;
   }
   .m-p-input-container div:hover {
     opacity: 0.9;
@@ -349,12 +352,23 @@
   <!--文件载入-->
   <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
-    <input type="text" v-model="url" :disable="downloading" placeholder="请输入 m3u8 链接">
+    <input type="text" v-model="url" :disabled="downloading" placeholder="请输入 m3u8 链接">
+
+    <!--范围查询-->
+    <template v-if="!downloading || rangeDownload.isShowRange">
+      <div v-if="!rangeDownload.isShowRange" @click="getM3U8(true)">特定范围下载</div>
+      <template v-else>
+        <input class="range-input" type="number" v-model="rangeDownload.startSegment" :disabled="downloading" placeholder="起始片段">
+        <input class="range-input" type="number" v-model="rangeDownload.endSegment" :disabled="downloading" placeholder="截止片段">
+      </template>
+    </template>
+
+    <!--还未开始下载-->
     <template v-if="!downloading">
-      <div @click="getM3U8">原格式下载</div>
+      <div @click="getM3U8(false)">原格式下载</div>
       <div @click="getMP4">转码为MP4下载</div>
     </template>
-    <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">下载完成</div>
+    <div v-else-if="finishNum === rangeDownload.targetSegment && rangeDownload.targetSegment > 0" class="disable">下载完成</div>
     <div v-else @click="togglePause">{{ isPause ? '恢复下载' : '暂停下载' }}</div>
   </section>
 
@@ -363,9 +377,9 @@
 
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
-    <div class="m-p-retry" v-if="errorNum && downloadIndex >= tsUrlList.length" @click="retryAll">重新下载错误片段</div>
+    <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">重新下载错误片段</div>
     <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
-    <div class="m-p-tips">碎片总量：{{ tsUrlList.length }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / tsUrlList.length * 100).toFixed(2) }}%</div>
+    <div class="m-p-tips">待下载碎片总量：{{ rangeDownload.targetSegment }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / rangeDownload.targetSegment * 100).toFixed(2) }}%</div>
     <div class="m-p-tips">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
     <section class="m-p-segment">
       <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
@@ -409,6 +423,12 @@ new Vue({
       finishList: [], // 下载完成项目
       tsUrlList: [], // ts URL数组
       mediaFileList: [], // 下载的媒体数组
+      rangeDownload: { // 特定范围下载
+        isShowRange: false, // 是否显示范围下载
+        startSegment: '', // 起始片段
+        endSegment: '', // 截止片段
+        targetSegment: 1, // 待下载片段
+      },
       aesConf: { // AES 视频解密配置
         method: '', // 加密算法
         uri: '', // key 所在文件路径
@@ -493,7 +513,7 @@ new Vue({
     },
 
     // 获取在线文件
-    getM3U8() {
+    getM3U8(onlyGetRange) {
       if (!this.url) {
         alert('请输入链接')
         return
@@ -505,14 +525,13 @@ new Vue({
         return
       }
 
-      this.downloading = true
-
       this.tips = 'm3u8 文件下载中，请稍后'
       this.beginTime = new Date()
       this.ajax({
         url: this.url,
         success: (m3u8Str) => {
           this.tsUrlList = []
+          this.finishList = []
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
@@ -527,6 +546,24 @@ new Vue({
               })
             }
           })
+
+          // 仅获取视频片段数
+          if (onlyGetRange) {
+            this.rangeDownload.isShowRange = true
+            this.rangeDownload.endSegment = this.tsUrlList.length
+            this.rangeDownload.targetSegment = this.tsUrlList.length
+            return
+          } else {
+            let startSegment = Math.max(this.rangeDownload.startSegment || 1, 1) // 最小为 1
+            let endSegment = Math.max(this.rangeDownload.endSegment || this.tsUrlList.length, 1)
+            startSegment = Math.min(startSegment, this.tsUrlList.length) // 最大为 this.tsUrlList.length
+            endSegment = Math.min(endSegment, this.tsUrlList.length)
+            this.rangeDownload.startSegment = Math.min(startSegment, endSegment)
+            this.rangeDownload.endSegment = Math.max(startSegment, endSegment)
+            this.rangeDownload.targetSegment = this.rangeDownload.endSegment - this.rangeDownload.startSegment + 1
+            this.downloadIndex = this.rangeDownload.startSegment - 1
+            this.downloading = true
+          }
 
           // 检测视频 AES 加密
           if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
@@ -592,23 +629,23 @@ new Vue({
             url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
-              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && !isPause && download())
+              this.dealTS(file, index, () => this.downloadIndex < this.rangeDownload.endSegment && !isPause && download())
             },
             fail: () => {
               this.errorNum++
               this.finishList[index].status = 'error'
-              if (this.downloadIndex < this.tsUrlList.length) {
+              if (this.downloadIndex < this.rangeDownload.endSegment) {
                 !isPause && download()
               }
             }
           })
-        } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
+        } else if (this.downloadIndex < this.rangeDownload.endSegment) { // 跳过已经成功的片段
           !isPause && download()
         }
       }
 
       // 建立多少个 ajax 线程
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < Math.min(10, this.rangeDownload.targetSegment - this.finishNum); i++) {
         download(i)
       }
     },
@@ -620,7 +657,7 @@ new Vue({
         this.mediaFileList[index] = afterData // 判断文件是否需要解密
         this.finishList[index].status = 'finish'
         this.finishNum++
-        if (this.finishNum === this.tsUrlList.length) {
+        if (this.finishNum === this.rangeDownload.targetSegment) {
           this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
         }
         callback && callback()
@@ -683,7 +720,7 @@ new Vue({
         }
       })
       this.errorNum = 0
-      this.downloadIndex = 0
+      this.downloadIndex = this.rangeDownload.startSegment - 1
       this.downloadTS()
     },
 
