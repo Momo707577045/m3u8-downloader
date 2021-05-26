@@ -398,7 +398,7 @@ var _hmt = _hmt || [];
 })();
 </script>
 <!--vue 前端框架-->
-<script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js"></script>
 <script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js"></script>
 <script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js"></script>
 
@@ -517,13 +517,16 @@ new Vue({
       if (!this.url) {
         alert('请输入链接')
         return
-      } else if (this.url.toLowerCase().indexOf('m3u8') === -1) {
+      } else if (this.url.toLowerCase().indexOf('.m3u8') === -1) {
         alert('链接有误，请重新输入')
         return
       } else if (this.downloading) {
         alert('资源下载中，请稍后')
         return
-      } else if (this.url.indexOf(location.protocol) === -1) { // 当前协议不一致，切换协议
+      } else if (
+        location.href.indexOf('blog.luckly-mjw.cn') > -1 // 在下载页面才触发，代码注入的页面不需要校验
+        && this.url.indexOf(location.protocol) === -1  // 当前协议不一致，切换协议
+      ) {
         alert('当前协议不一致，跳转至正确页面重新下载')
         location.href = `${this.url.split(':')[0]}://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=${this.url}`
         return
@@ -791,7 +794,7 @@ new Vue({
 
     // 拷贝本页面本身，解决跨域问题
     copyCode() {
-      if (this.tips !== '代码下载中，请稍后' && this.tips !== '复制成功，打开视频网页控制台，注入本代码') {
+      if (this.tips !== '代码下载中，请稍后') {
         this.tips = '代码下载中，请稍后';
         this.ajax({
           url: './index.html',
@@ -829,14 +832,14 @@ new Vue({
 
           // 加载 vue
           let $vue = document.createElement('script')
-          $vue.src = 'https://cdn.bootcss.com/vue/2.6.10/vue.min.js'
+          $vue.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js'
 
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
           document.body.appendChild($vue);
           document.body.appendChild($mp4);
           document.body.appendChild($ase);
-          alert('注入成功，请滚动到页面底部')
+          alert('注入成功，请滚动到页面底部，若白屏则等待资源加载')
           `;
             this.copyToClipboard(codeStr);
             this.tips = '复制成功，打开视频网页控制台，注入本代码';

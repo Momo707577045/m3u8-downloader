@@ -1,11 +1,14 @@
 // ==UserScript==
 // @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
-// @version      0.1
+// @version      0.3.2
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
 // @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
+// @require      https://greasyfork.org/scripts/427043-vue-for-window-js/code/vue-for-windowjs.js?version=934576
+// @require      https://greasyfork.org/scripts/426404-aes-decryptor-js/code/aes-decryptorjs.js?version=930559
+// @require      https://greasyfork.org/scripts/426406-mux-mp4-js/code/mux-mp4js.js?version=930561
 // @grant        none
 // @run-at document-start
 // ==/UserScript==
@@ -63,7 +66,7 @@
     window.XMLHttpRequest = function() {
       var realXHR = new originXHR()
       realXHR.open = function(method, url, asyn) {
-        url.indexOf('m3u8') > 0 && checkM3u8Url(url)
+        url.indexOf('.m3u8') > 0 && checkM3u8Url(url)
         originOpen.call(realXHR, method, url, asyn)
       }
       return realXHR
@@ -142,7 +145,7 @@
         s.parentNode.insertBefore(hm, s);
       })();
       ajax({
-        url: 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html',
+        url: 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html',
         success: (fileStr) => {
           let fileList = fileStr.split(`<!--vue 前端框架--\>`);
           let dom = fileList[0];
@@ -166,23 +169,7 @@
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
 
-          // 加载 ASE 解密
-          let $ase = document.createElement('script')
-          $ase.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
-
-          // 加载 mp4 转码
-          let $mp4 = document.createElement('script')
-          $mp4.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
-
-          // 加载 vue
-          let $vue = document.createElement('script')
-          $vue.src = 'https://cdn.bootcss.com/vue/2.6.10/vue.min.js'
-
-          // 监听 vue 加载完成，执行业务代码
-          $vue.addEventListener('load', function() {eval(script)})
-          document.body.appendChild($vue);
-          document.body.appendChild($mp4);
-          document.body.appendChild($ase);
+          eval(script) // 动态执行业务逻辑
           alert('注入成功，请滚动到页面底部')
         },
       })
