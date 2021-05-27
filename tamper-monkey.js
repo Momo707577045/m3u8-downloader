@@ -63,14 +63,14 @@
     window._hadResetAjax = true
 
     var originOpen = originXHR.prototype.open
-    window.XMLHttpRequest = function() {
+    window.XMLHttpRequest = (function() {
       var realXHR = new originXHR()
-      realXHR.open = function(method, url, asyn) {
+      realXHR.open = function(method, url) {
         url.indexOf('.m3u8') > 0 && checkM3u8Url(url)
-        originOpen.call(realXHR, method, url, asyn)
+        originOpen.call(realXHR, method, url)
       }
       return realXHR
-    }
+    }).bind(originXHR.prototype)
   }
 
   function appendDom() {
