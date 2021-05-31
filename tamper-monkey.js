@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
-// @version      0.3.2
+// @version      0.4.2
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
@@ -63,14 +63,14 @@
     window._hadResetAjax = true
 
     var originOpen = originXHR.prototype.open
-    window.XMLHttpRequest = (function() {
+    window.XMLHttpRequest = function() {
       var realXHR = new originXHR()
       realXHR.open = function(method, url) {
         url.indexOf('.m3u8') > 0 && checkM3u8Url(url)
         originOpen.call(realXHR, method, url)
       }
       return realXHR
-    }).bind(originXHR.prototype)
+    }
   }
 
   function appendDom() {
