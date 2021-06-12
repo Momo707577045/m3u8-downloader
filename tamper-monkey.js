@@ -9,7 +9,9 @@
 // @require      https://greasyfork.org/scripts/427043-vue-for-window-js/code/vue-for-windowjs.js?version=934576
 // @require      https://greasyfork.org/scripts/426404-aes-decryptor-js/code/aes-decryptorjs.js?version=930559
 // @require      https://greasyfork.org/scripts/426406-mux-mp4-js/code/mux-mp4js.js?version=930561
+// @require      https://greasyfork.org/scripts/427821-%E7%99%BE%E5%BA%A6%E7%BB%9F%E8%AE%A1/code/%E7%99%BE%E5%BA%A6%E7%BB%9F%E8%AE%A1.js?version=939847
 // @grant        none
+// @license      MIT
 // @run-at document-start
 // ==/UserScript==
 
@@ -137,13 +139,7 @@
     })
 
     m3u8Append.addEventListener('click', function() {
-      var _hmt = _hmt || [];
-      (function() {
-        var hm = document.createElement("script");
-        hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
-        var s = document.getElementsByTagName("script")[0];
-        s.parentNode.insertBefore(hm, s);
-      })();
+      window._hmt.push(["_requirePlugin", "OcpcCbHm"])
       ajax({
         url: 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html',
         success: (fileStr) => {
