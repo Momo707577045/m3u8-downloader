@@ -1,17 +1,12 @@
 // ==UserScript==
 // @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
-// @version      0.4.2
+// @version      0.5.0
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
 // @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
-// @require      https://greasyfork.org/scripts/427043-vue-for-window-js/code/vue-for-windowjs.js?version=934576
-// @require      https://greasyfork.org/scripts/426404-aes-decryptor-js/code/aes-decryptorjs.js?version=930559
-// @require      https://greasyfork.org/scripts/426406-mux-mp4-js/code/mux-mp4js.js?version=930561
-// @require      https://greasyfork.org/scripts/427821-%E7%99%BE%E5%BA%A6%E7%BB%9F%E8%AE%A1/code/%E7%99%BE%E5%BA%A6%E7%BB%9F%E8%AE%A1.js?version=939847
 // @grant        none
-// @license      MIT
 // @run-at document-start
 // ==/UserScript==
 
@@ -139,7 +134,13 @@
     })
 
     m3u8Append.addEventListener('click', function() {
-      window._hmt.push(["_requirePlugin", "OcpcCbHm"])
+      var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
       ajax({
         url: 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html',
         success: (fileStr) => {
@@ -165,7 +166,23 @@
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
 
-          eval(script) // 动态执行业务逻辑
+          // 加载 ASE 解密
+          let $ase = document.createElement('script')
+          $ase.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
+
+          // 加载 mp4 转码
+          let $mp4 = document.createElement('script')
+          $mp4.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
+
+          // 加载 vue
+          let $vue = document.createElement('script')
+          $vue.src = 'https://cdn.bootcss.com/vue/2.6.10/vue.min.js'
+
+          // 监听 vue 加载完成，执行业务代码
+          $vue.addEventListener('load', function() {eval(script)})
+          document.body.appendChild($vue);
+          document.body.appendChild($mp4);
+          document.body.appendChild($ase);
           alert('注入成功，请滚动到页面底部')
         },
       })
