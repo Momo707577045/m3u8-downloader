@@ -532,7 +532,7 @@ new Vue({
       // 在下载页面才触发，代码注入的页面不需要校验
       // 当前协议不一致，切换协议
       if (location.href.indexOf('blog.luckly-mjw.cn') > -1 && this.url.indexOf(location.protocol) === -1) {
-        alert('当前协议不一致，跳转至正确页面重新下载')
+        //alert('当前协议不一致，跳转至正确页面重新下载')
         location.href = `${this.url.split(':')[0]}://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=${this.url}`
         return
       }
@@ -552,7 +552,7 @@ new Vue({
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
-            if (item.toLowerCase().indexOf('.ts') > -1) {
+            if (item.toLowerCase().indexOf('.ts') > -1 || item.toLowerCase().indexOf('.image') > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
