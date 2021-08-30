@@ -131,13 +131,13 @@
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/16.jpeg)
 
 
-### 油猴插件
+### [油猴插件](https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/m3u8-downloader.user.js)
 
 ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/15.jpeg)
 
 - 「跳转下载」即新开页面，打开本工具页面，自动携带并解析目标地址
 - 「注入下载」为解决跨域而生，直接将代码注入到当前视频网站，进行视频下载
-- [插件源码点这里](https://github.com/Momo707577045/m3u8-downloader/blob/master/tamper-monkey.js)
+- 插件源码: https://github.com/Momo707577045/m3u8-downloader/blob/master/m3u8-downloader.user.js
 - 手动添加油猴插件步骤
   - 点击 tamper-monkey「油猴」icon，点击「添加新脚本」
 
