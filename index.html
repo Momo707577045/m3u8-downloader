@@ -495,7 +495,6 @@ new Vue({
 
     // 合成URL
     applyURL(targetURL, baseURL) {
-      console.log('target: ' + targetURL + '; baseUrl: ' + baseURL)
       baseURL = baseURL || location.href
       if (targetURL.indexOf('http') === 0) {
         return targetURL
