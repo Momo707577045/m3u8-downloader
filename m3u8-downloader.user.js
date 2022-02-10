@@ -130,7 +130,7 @@
     })
 
     m3u8Jump.addEventListener('click', function() {
-      window.open('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target)
+      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target)
     })
 
     m3u8Append.addEventListener('click', function() {
@@ -158,25 +158,27 @@
           let $section = document.createElement('section')
           $section.innerHTML = `${dom}`
           $section.style.width = '100%'
-          $section.style.height = '800px'
-          $section.style.top = '0'
+          $section.style.height = '100%'
+          $section.style.maxHeight = '800px'
+          $section.style.bottom = '0'
           $section.style.left = '0'
-          $section.style.position = 'relative'
+          $section.style.position = 'absolute'
           $section.style.zIndex = '9999'
+          $section.style.overflowY = 'auto'
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
 
           // 加载 ASE 解密
           let $ase = document.createElement('script')
-          $ase.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
+          $ase.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
 
           // 加载 mp4 转码
           let $mp4 = document.createElement('script')
-          $mp4.src = 'http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
+          $mp4.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
 
           // 加载 vue
           let $vue = document.createElement('script')
-          $vue.src = 'https://cdn.bootcss.com/vue/2.6.10/vue.min.js'
+          $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
 
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', function() {eval(script)})

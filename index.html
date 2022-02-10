@@ -5,8 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta name="keywords" content="m3u8 downloader for web">
-  <meta name="description" content="m3u8 downloader for web, Momo's Blog, LuckyMomo">
+  <meta name="author" content="毛静文,Momo">
+  <meta name="keywords" content="m3u8 下载工具, 毛静文的博客,Momo's Blog">
+  <meta name="description" content="m3u8 下载工具,无需下载软件,打开网站即可下载,自动检测,一键下载">
   <title>m3u8 downloader</title>
   <style>
   /*全局设置*/
@@ -333,7 +334,14 @@
 </head>
 
 <body>
-<div id="loading">页面加载中，请耐心等待...</div>
+<div id="loading">
+  页面加载中，请耐心等待...
+  <h1 style="white-space: pre;">
+    推荐一个 m3u8 网页版提取工具，无需下载软件，打开网站即可下载，自动检测，一键下载。
+    工具链接：https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
+    工具教程：https://segmentfault.com/a/1190000021847172?_ea=32289224
+  </h1>
+</div>
 <section id="m-app" v-cloak>
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
@@ -391,7 +399,7 @@
 
 <script>
 var _hmt = _hmt || [];
-(function() {
+(function () {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
   var s = document.getElementsByTagName("script")[0];
@@ -405,6 +413,7 @@ var _hmt = _hmt || [];
 
 <script>
 // script注入
+document.getElementById('loading') && document.getElementById('loading').remove()
 new Vue({
   el: '#m-app',
 
@@ -437,7 +446,7 @@ new Vue({
         key: '', // 秘钥
         decryptor: null, // 解码器对象
 
-        stringToBuffer: function(str) {
+        stringToBuffer: function (str) {
           return new TextEncoder().encode(str)
         },
       },
@@ -446,7 +455,6 @@ new Vue({
 
   created() {
     this.getSource();
-    document.getElementById('loading') && document.getElementById('loading').remove()
     window.addEventListener('keyup', this.onKeyup)
   },
 
@@ -478,7 +486,7 @@ new Vue({
         xhr.responseType = 'arraybuffer';
       }
 
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
           let status = xhr.status;
           if (status >= 200 && status < 300) {
