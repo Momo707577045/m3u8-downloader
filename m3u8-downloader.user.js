@@ -6,6 +6,8 @@
 // @author       Momo707577045
 // @include      *
 // @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
+// @exclude      https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
+// @exclude      https://www.bilibili.com/*
 // @grant        none
 // @run-at document-start
 // ==/UserScript==
