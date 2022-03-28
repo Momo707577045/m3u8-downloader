@@ -268,6 +268,9 @@
     width: 100px;
     display: inline-block;
   }
+  .m-p-tips.error-tips{
+    color: #DC5350;
+  }
   .m-p-segment {
     text-align: left;
   }
@@ -283,6 +286,7 @@
     cursor: help;
     border: solid 1px #eeeeee;
     background-color: #dddddd;
+    transition: 0.3s all;
   }
   .m-p-segment .finish {
     background-color: #0ACD76;
@@ -290,6 +294,9 @@
   .m-p-segment .error {
     cursor: pointer;
     background-color: #DC5350;
+  }
+  .m-p-segment .error:hover {
+    opacity: 0.9;
   }
   .m-p-cross, .m-p-final {
     display: inline-block;
@@ -340,6 +347,8 @@
     推荐一个 m3u8 网页版提取工具，无需下载软件，打开网站即可下载，自动检测，一键下载。
     工具链接：https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
     工具教程：https://segmentfault.com/a/1190000021847172?_ea=32289224
+    <img src="https://upyun.luckly-mjw.cn/Assets/blog/m3u8-downloader-121-75.jpeg" alt="m3u8 视频下载工具" title="logo"/>
+    <a target="_blank" href="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html">点击跳转</a>
   </h1>
 </div>
 <section id="m-app" v-cloak>
@@ -389,7 +398,7 @@
     <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">重新下载错误片段</div>
     <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
     <div class="m-p-tips">待下载碎片总量：{{ rangeDownload.targetSegment }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / rangeDownload.targetSegment * 100).toFixed(2) }}%</div>
-    <div class="m-p-tips">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
+    <div class="m-p-tips" :class="[errorNum ? 'error-tips' : '']">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
     <section class="m-p-segment">
       <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
     </section>
@@ -407,11 +416,12 @@ var _hmt = _hmt || [];
 })();
 </script>
 <!--vue 前端框架-->
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js"></script>
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js"></script>
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/vue.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/aes-decryptor.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/mux-mp4.js"></script>
 
 <script>
+  
 // script注入
 document.getElementById('loading') && document.getElementById('loading').remove()
 new Vue({
@@ -842,15 +852,15 @@ new Vue({
 
           // 加载 ASE 解密
           let $ase = document.createElement('script')
-          $ase.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
+          $ase.src = 'https://upyun.luckly-mjw.cn/lib/aes-decryptor.js'
 
           // 加载 mp4 转码
           let $mp4 = document.createElement('script')
-          $mp4.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
+          $mp4.src = 'https://upyun.luckly-mjw.cn/lib/mux-mp4.js'
 
           // 加载 vue
           let $vue = document.createElement('script')
-          $vue.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js'
+          $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
 
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
