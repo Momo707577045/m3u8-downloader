@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="author" content="毛静文,Momo">
   <meta name="keywords" content="m3u8 downloader for web">
   <meta name="description" content="m3u8 downloader for web, Momo's Blog, LuckyMomo">
   <title>m3u8 downloader</title>
@@ -72,10 +73,10 @@
     opacity: 0.9;
   }
   .m-p-language {
-    bottom: 110px;
+    bottom: 70px;
   }
   .m-p-other {
-    bottom: 70px;
+    bottom: 110px;
   }
   .m-p-tamper {
     bottom: 30px;
@@ -117,7 +118,7 @@
     background-size: 30px 30px;
     background-repeat: no-repeat;
     background-position: center center;
-    background-image: url(https://blog.luckly-mjw.cn/tool-show/m3u8-downloaderimgs/close.png);
+    background-image: url(https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/imgs/close.png);
     background-color: rgba(0, 0, 0, 0.5);
   }
   .m-p-refer .close:hover {
@@ -208,7 +209,6 @@
   .m-p-input-container input {
     flex: 1;
     margin-bottom: 30px;
-    margin-right: 12px;
     display: block;
     width: 280px;
     padding: 16px;
@@ -218,9 +218,16 @@
     color: #444444;
     border: 1px solid #cccccc;
   }
+  .m-p-input-container .range-input {
+    margin-left: 10px;
+    flex: 0 0 100px;
+    width: 100px;
+    box-sizing: border-box;
+  }
   .m-p-input-container div {
     position: relative;
     display: inline-block;
+    margin-left: 10px;
     height: 60px;
     line-height: 60px;
     font-size: 24px;
@@ -231,9 +238,6 @@
     background-color: #3D8AC7;
     opacity: 1;
     transition: 0.3s all;
-  }
-  .m-p-input-container div:last-child {
-    margin-left: 10px;
   }
   .m-p-input-container div:hover {
     opacity: 0.9;
@@ -264,6 +268,9 @@
     width: 100px;
     display: inline-block;
   }
+  .m-p-tips.error-tips{
+    color: #DC5350;
+  }
   .m-p-segment {
     text-align: left;
   }
@@ -279,6 +286,7 @@
     cursor: help;
     border: solid 1px #eeeeee;
     background-color: #dddddd;
+    transition: 0.3s all;
   }
   .m-p-segment .finish {
     background-color: #0ACD76;
@@ -287,10 +295,14 @@
     cursor: pointer;
     background-color: #DC5350;
   }
+  .m-p-segment .error:hover {
+    opacity: 0.9;
+  }
   .m-p-cross, .m-p-final {
     display: inline-block;
     width: 100%;
-    padding: 10px 20px;
+    height: 50px;
+    line-height: 50px;
     font-size: 20px;
     color: white;
     cursor: pointer;
@@ -340,20 +352,31 @@
 
   <!--广告-->
   <a v-if="isShowRefer" class="m-p-refer" target="_blank" href="https://segmentfault.com/a/1190000024416860">
-    <img src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloaderimgs/001.png" class="link">
-    <img src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloaderimgs/003.png" class="text">
+    <img src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/imgs/001.png" class="link">
+    <img src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/imgs/003.png" class="text">
     <i class="close" @click.prevent="isShowRefer=false"></i>
   </a>
 
   <!--文件载入-->
   <div class="m-p-temp-url">test url：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
   <section class="m-p-input-container">
-    <input type="text" v-model="url" :disable="downloading" placeholder="Please input m3u8 url">
-    <template v-if="!downloading">
-      <div @click="getM3U8">download in ts</div>
-      <div @click="getMP4">download in mp4</div>
+    <input type="text" v-model="url" :disabled="downloading" placeholder="Please input m3u8 url">
+
+    <!--范围查询-->
+    <template v-if="!downloading || rangeDownload.isShowRange">
+      <div v-if="!rangeDownload.isShowRange" @click="getM3U8(true)">Set range</div>
+      <template v-else>
+        <input class="range-input" type="number" v-model="rangeDownload.startSegment" :disabled="downloading" placeholder="Start">
+        <input class="range-input" type="number" v-model="rangeDownload.endSegment" :disabled="downloading" placeholder="End">
+      </template>
     </template>
-    <div v-else-if="finishNum === tsUrlList.length && tsUrlList.length > 0" class="disable">Finish</div>
+
+    <!--还未开始下载-->
+    <template v-if="!downloading">
+      <div @click="getM3U8(false)">Download as .ts</div>
+      <div @click="getMP4">Download as .mp4</div>
+    </template>
+    <div v-else-if="finishNum === rangeDownload.targetSegment && rangeDownload.targetSegment > 0" class="disable">Finish</div>
     <div v-else @click="togglePause">{{ isPause ? 'Resume' : 'Pause' }}</div>
   </section>
 
@@ -362,10 +385,10 @@
 
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
-    <div class="m-p-retry" v-if="errorNum && downloadIndex >= tsUrlList.length" @click="retryAll">Retry error fragment</div>
-    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">Download finished fragment</div>
-    <div class="m-p-tips">sum：{{ tsUrlList.length }}，finish：{{ finishNum }}，error：{{ errorNum }}，percentage：{{ (finishNum / tsUrlList.length * 100).toFixed(2) }}%</div>
-    <div class="m-p-tips">when the icon turn red, it means error, click it to retry</div>
+    <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">Retry error fragments</div>
+    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">Download finished fragments</div>
+    <div class="m-p-tips">total：{{ rangeDownload.targetSegment }}，finished：{{ finishNum }}，error：{{ errorNum }}，percentage：{{ (finishNum / rangeDownload.targetSegment * 100).toFixed(2) }}%</div>
+    <div class="m-p-tips" :class="[errorNum ? 'error-tips' : '']">when the icon turn red, it means error, click it to retry</div>
     <section class="m-p-segment">
       <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
     </section>
@@ -375,7 +398,7 @@
 
 <script>
 var _hmt = _hmt || [];
-(function() {
+(function () {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
   var s = document.getElementsByTagName("script")[0];
@@ -383,19 +406,21 @@ var _hmt = _hmt || [];
 })();
 </script>
 <!--vue 前端框架-->
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js"></script>
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js"></script>
-<script src="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/vue.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/aes-decryptor.js"></script>
+<script src="https://upyun.luckly-mjw.cn/lib/mux-mp4.js"></script>
 
 <script>
+
 // script注入
+document.getElementById('loading') && document.getElementById('loading').remove()
 new Vue({
   el: '#m-app',
 
   data() {
     return {
       url: '', // 在线链接
-      tips: 'm3u8 downloader in web', // 顶部提示
+      tips: 'm3u8 web downloader', // 顶部提示
       isPause: false, // 是否暂停下载
       isGetMP4: false, // 是否转码为 MP4 下载
       durationSecond: 0, // 视频持续时长
@@ -408,6 +433,12 @@ new Vue({
       finishList: [], // 下载完成项目
       tsUrlList: [], // ts URL数组
       mediaFileList: [], // 下载的媒体数组
+      rangeDownload: { // 特定范围下载
+        isShowRange: false, // 是否显示范围下载
+        startSegment: '', // 起始片段
+        endSegment: '', // 截止片段
+        targetSegment: 1, // 待下载片段
+      },
       aesConf: { // AES 视频解密配置
         method: '', // 加密算法
         uri: '', // key 所在文件路径
@@ -415,7 +446,7 @@ new Vue({
         key: '', // 秘钥
         decryptor: null, // 解码器对象
 
-        stringToBuffer: function(str) {
+        stringToBuffer: function (str) {
           return new TextEncoder().encode(str)
         },
       },
@@ -455,7 +486,7 @@ new Vue({
         xhr.responseType = 'arraybuffer';
       }
 
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
           let status = xhr.status;
           if (status >= 200 && status < 300) {
@@ -492,33 +523,44 @@ new Vue({
     },
 
     // 获取在线文件
-    getM3U8() {
+    getM3U8(onlyGetRange) {
       if (!this.url) {
         alert('Please input url')
         return
-      } else if (this.url.toLowerCase().indexOf('.m3u8') === -1) {
+      }
+      if (this.url.toLowerCase().indexOf('.m3u8') === -1) {
         alert('The url is error, please  re-enter')
         return
-      } else if (this.downloading) {
+      }
+      if (this.downloading) {
         alert('downloading，please wait')
         return
       }
 
-      this.downloading = true
+      // 在下载页面才触发，代码注入的页面不需要校验
+      // 当前协议不一致，切换协议
+      if (location.href.indexOf('blog.luckly-mjw.cn') > -1 && this.url.indexOf(location.protocol) === -1) {
+        //alert('The current protocol is inconsistent, redirect to the correct page to download again')
+        location.href = `${this.url.split(':')[0]}://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index-en.html?source=${this.url}`
+        return
+      }
 
-      this.tips = 'm3u8 downloading, please wait'
+      // 在下载页面才触发，修改页面 URL，携带下载路径，避免刷新后丢失
+      if (location.href.indexOf('blog.luckly-mjw.cn') > -1) {
+        window.history.replaceState(null, '', `${location.href.split('?')[0]}?source=${this.url}`)
+      }
+
+      this.tips = 'm3u8 web downloader'
       this.beginTime = new Date()
       this.ajax({
         url: this.url,
         success: (m3u8Str) => {
           this.tsUrlList = []
+          this.finishList = []
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
-            if (this.isGetMP4 && item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
-              this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
-            }
-            if (item.toLowerCase().indexOf('.ts') > -1) {
+            if (item.toLowerCase().indexOf('.ts') > -1 || item.toLowerCase().indexOf('.image') > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
@@ -526,6 +568,37 @@ new Vue({
               })
             }
           })
+
+          // 仅获取视频片段数
+          if (onlyGetRange) {
+            this.rangeDownload.isShowRange = true
+            this.rangeDownload.endSegment = this.tsUrlList.length
+            this.rangeDownload.targetSegment = this.tsUrlList.length
+            return
+          } else {
+            let startSegment = Math.max(this.rangeDownload.startSegment || 1, 1) // 最小为 1
+            let endSegment = Math.max(this.rangeDownload.endSegment || this.tsUrlList.length, 1)
+            startSegment = Math.min(startSegment, this.tsUrlList.length) // 最大为 this.tsUrlList.length
+            endSegment = Math.min(endSegment, this.tsUrlList.length)
+            this.rangeDownload.startSegment = Math.min(startSegment, endSegment)
+            this.rangeDownload.endSegment = Math.max(startSegment, endSegment)
+            this.rangeDownload.targetSegment = this.rangeDownload.endSegment - this.rangeDownload.startSegment + 1
+            this.downloadIndex = this.rangeDownload.startSegment - 1
+            this.downloading = true
+          }
+
+          // 获取需要下载的 MP4 视频长度
+          if (this.isGetMP4) {
+            let infoIndex = 0
+            m3u8Str.split('\n').forEach(item => {
+              if (item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
+                infoIndex++
+                if (this.rangeDownload.startSegment <= infoIndex && infoIndex <= this.rangeDownload.endSegment) {
+                  this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
+                }
+              }
+            })
+          }
 
           // 检测视频 AES 加密
           if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
@@ -543,18 +616,18 @@ new Vue({
           } else if (this.tsUrlList.length > 0) { // 如果视频没加密，则直接下载片段，否则先下载秘钥
             this.downloadTS()
           } else {
-            this.alertError('')
+            this.alertError('The resource is empty, please check if the link is valid')
           }
         },
         fail: () => {
-          this.alertError('The resource is empty, please check whether the link is valid')
+          this.alertError('The link is incorrect, please check if the link is valid')
         }
       })
     },
 
     // 获取AES配置
     getAES() {
-      alert('The video is encrypted by AES. Click OK to decode the video')
+      alert('The video is encrypted by using AES, click OK to decode the video.')
       this.ajax({
         type: 'file',
         url: this.aesConf.uri,
@@ -568,7 +641,7 @@ new Vue({
           this.downloadTS()
         },
         fail: () => {
-          this.alertError('AES is error')
+          this.alertError('The video has custom encryption and custom decryption download is not supported')
         }
       })
     },
@@ -591,23 +664,23 @@ new Vue({
             url: this.tsUrlList[index],
             type: 'file',
             success: (file) => {
-              this.dealTS(file, index, () => this.downloadIndex < this.tsUrlList.length && !isPause && download())
+              this.dealTS(file, index, () => this.downloadIndex < this.rangeDownload.endSegment && !isPause && download())
             },
             fail: () => {
               this.errorNum++
               this.finishList[index].status = 'error'
-              if (this.downloadIndex < this.tsUrlList.length) {
+              if (this.downloadIndex < this.rangeDownload.endSegment) {
                 !isPause && download()
               }
             }
           })
-        } else if (this.downloadIndex < this.tsUrlList.length) { // 跳过已经成功的片段
+        } else if (this.downloadIndex < this.rangeDownload.endSegment) { // 跳过已经成功的片段
           !isPause && download()
         }
       }
 
       // 建立多少个 ajax 线程
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < Math.min(10, this.rangeDownload.targetSegment - this.finishNum); i++) {
         download(i)
       }
     },
@@ -616,10 +689,10 @@ new Vue({
     dealTS(file, index, callback) {
       const data = this.aesConf.uri ? this.aesDecrypt(file, index) : file
       this.conversionMp4(data, index, (afterData) => { // mp4 转码
-        this.mediaFileList[index] = afterData // 判断文件是否需要解密
+        this.mediaFileList[index - this.rangeDownload.startSegment + 1] = afterData // 判断文件是否需要解密
         this.finishList[index].status = 'finish'
         this.finishNum++
-        if (this.finishNum === this.tsUrlList.length) {
+        if (this.finishNum === this.rangeDownload.targetSegment) {
           this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
         }
         callback && callback()
@@ -634,7 +707,7 @@ new Vue({
           duration: parseInt(this.durationSecond),
         });
         transmuxer.on('data', segment => {
-          if (index === 0) {
+          if (index === this.rangeDownload.startSegment - 1) {
             let data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
             data.set(segment.initSegment, 0);
             data.set(segment.data, segment.initSegment.byteLength);
@@ -646,7 +719,7 @@ new Vue({
         transmuxer.push(new Uint8Array(data));
         transmuxer.flush();
       } else {
-        callback(data, index)
+        callback(data)
       }
     },
 
@@ -682,13 +755,13 @@ new Vue({
         }
       })
       this.errorNum = 0
-      this.downloadIndex = 0
+      this.downloadIndex = this.rangeDownload.startSegment - 1
       this.downloadTS()
     },
 
     // 下载整合后的TS文件
     downloadFile(fileDataList, fileName) {
-      this.tips = 'ts fragment integration, please pay attention to the browser download'
+      this.tips = 'ts fragment is being combined, please wait for the browser download window to open'
       let fileBlob = null
       let a = document.createElement('a')
       if (this.isGetMP4) {
@@ -726,7 +799,7 @@ new Vue({
       if (this.mediaFileList.length) {
         this.downloadFile(this.mediaFileList, this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss'))
       } else {
-        alert('There are currently no downloaded fragment')
+        alert('There is no ts fragment to download')
       }
     },
 
@@ -734,13 +807,13 @@ new Vue({
     alertError(tips) {
       alert(tips)
       this.downloading = false
-      this.tips = 'm3u8 downloader in web';
+      this.tips = 'm3u8 web downloader';
     },
 
     // 拷贝本页面本身，解决跨域问题
     copyCode() {
-      if (this.tips !== 'Code downloading, please wait') {
-        this.tips = 'Code downloading, please wait';
+      if (this.tips !== 'Downloading code, please wait') {
+        this.tips = 'Downloading code, please wait';
         this.ajax({
           url: './index-en.html',
           success: (fileStr) => {
@@ -769,15 +842,15 @@ new Vue({
 
           // 加载 ASE 解密
           let $ase = document.createElement('script')
-          $ase.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
+          $ase.src = 'https://upyun.luckly-mjw.cn/lib/aes-decryptor.js'
 
           // 加载 mp4 转码
           let $mp4 = document.createElement('script')
-          $mp4.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
+          $mp4.src = 'https://upyun.luckly-mjw.cn/lib/mux-mp4.js'
 
           // 加载 vue
           let $vue = document.createElement('script')
-          $vue.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/vue.js'
+          $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
 
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', () => {${script}})
@@ -788,7 +861,10 @@ new Vue({
           `;
             this.copyToClipboard(codeStr);
             this.tips = 'Copy success, open the video web console, inject this code';
-          }
+          },
+          fail: () => {
+            this.alertError('The link is incorrect, please check if the link is valid');
+          },
         })
       }
     },
