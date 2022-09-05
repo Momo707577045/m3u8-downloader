@@ -166,6 +166,7 @@
           $section.style.left = '0'
           $section.style.position = 'absolute'
           $section.style.zIndex = '9999'
+          $section.style.fontSize = '14px'
           $section.style.overflowY = 'auto'
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
