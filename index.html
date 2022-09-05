@@ -515,6 +515,10 @@ new Vue({
     applyURL(targetURL, baseURL) {
       baseURL = baseURL || location.href
       if (targetURL.indexOf('http') === 0) {
+        // 当前页面使用 https 协议时，强制使 ts 资源也使用 https 协议获取
+        if(location.href.indexOf('https') === 0){
+          return targetURL.replace('http://','https://')
+        }
         return targetURL
       } else if (targetURL[0] === '/') {
         let domain = baseURL.split('/')
