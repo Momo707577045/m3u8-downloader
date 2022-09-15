@@ -395,7 +395,7 @@
 
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
-    <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">重新下载错误片段</div>
+    <!-- <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">重新下载错误片段</div> -->
     <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
     <div class="m-p-tips">待下载碎片总量：{{ rangeDownload.targetSegment }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / rangeDownload.targetSegment * 100).toFixed(2) }}%</div>
     <div class="m-p-tips" :class="[errorNum ? 'error-tips' : '']">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
@@ -468,6 +468,7 @@ new Vue({
     this.getTitle();
     this.getSource();
     window.addEventListener('keyup', this.onKeyup)
+    setInterval(this.retryAll.bind(this), 2000) // 每两秒重新下载一遍错误片段，实现错误自动重试
   },
 
   beforeDestroy() {
@@ -684,6 +685,9 @@ new Vue({
       let download = () => {
         let isPause = this.isPause // 使用另一个变量来保持下载前的暂停状态，避免回调后没修改
         let index = this.downloadIndex
+        if (index >= this.rangeDownload.endSegment) {
+          return
+        }
         this.downloadIndex++
         if (this.finishList[index] && this.finishList[index].status === '') {
           this.ajax({
@@ -706,8 +710,8 @@ new Vue({
       }
 
       // 建立多少个 ajax 线程
-      for (let i = 0; i < Math.min(10, this.rangeDownload.targetSegment - this.finishNum); i++) {
-        download(i)
+      for (let i = 0; i < Math.min(6, this.rangeDownload.targetSegment - this.finishNum); i++) {
+        download()
       }
     },
 
@@ -779,14 +783,26 @@ new Vue({
 
     // 重新下载所有错误片段
     retryAll() {
-      this.finishList.forEach((item) => { // 重置所有片段状态
+      
+      if (!this.finishList.length || this.isPause) {
+        return
+      }
+
+      let firstErrorIndex = this.downloadIndex // 没有错误项目，则每次都递增
+      this.finishList.forEach((item, index) => { // 重置所有片段状态
         if (item.status === 'error') {
           item.status = ''
+          firstErrorIndex = Math.min(firstErrorIndex, index)
         }
       })
       this.errorNum = 0
-      this.downloadIndex = this.rangeDownload.startSegment - 1
-      this.downloadTS()
+      // 已经全部下载进程都跑完了，则重新启动下载进程
+      if (this.downloadIndex >= this.rangeDownload.endSegment) {
+        this.downloadIndex = firstErrorIndex
+        this.downloadTS()
+      } else { // 否则只是将下载索引，改为最近一个错误的项目，从那里开始遍历
+        this.downloadIndex = firstErrorIndex
+      }
     },
 
     // 下载整合后的TS文件
