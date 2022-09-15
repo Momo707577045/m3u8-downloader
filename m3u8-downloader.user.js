@@ -49,7 +49,7 @@
           m3u8Target = url
           console.log('【m3u8】----------------------------------------')
           console.log(url)
-          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + url + '&title=' + document.title)
+          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + url + '&title=' + window.top.document.title)
         }
       }
     })
