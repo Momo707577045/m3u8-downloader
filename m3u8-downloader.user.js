@@ -8,6 +8,8 @@
 // @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
 // @exclude      https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
 // @exclude      https://www.bilibili.com/*
+// @downloadURL	 https://blog.luckly-mjw.cn/tool-show/media-source-extract/media-source-extract.user.js
+// @updateURL	   https://blog.luckly-mjw.cn/tool-show/media-source-extract/media-source-extract.user.js
 // @grant        none
 // @run-at document-start
 // ==/UserScript==
@@ -132,7 +134,7 @@
     })
 
     m3u8Jump.addEventListener('click', function() {
-      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target + '&title=' + document.title)
+      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target + '&title=' + window.top.document.title)
     })
 
     m3u8Append.addEventListener('click', function() {
