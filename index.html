@@ -53,6 +53,7 @@
     padding: 6px 12px;
     z-index: 99;
   }
+  
   .m-p-help {
     position: fixed;
     right: 50px;
@@ -208,7 +209,7 @@
   }
   .m-p-input-container input {
     flex: 1;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     display: block;
     width: 280px;
     padding: 16px;
@@ -298,7 +299,8 @@
   .m-p-segment .error:hover {
     opacity: 0.9;
   }
-  .m-p-cross, .m-p-final {
+  .m-p-stream, .m-p-cross, .m-p-final {
+    margin-top: 10px;
     display: inline-block;
     width: 100%;
     height: 50px;
@@ -312,8 +314,10 @@
     opacity: 1;
     transition: 0.3s all;
   }
+  .m-p-stream {
+    background-color: #0ACD76 !important;
+  }
   .m-p-final {
-    margin-top: 10px;
     text-decoration: none;
   }
   .m-p-force, .m-p-retry {
@@ -389,6 +393,8 @@
     <div v-else-if="finishNum === rangeDownload.targetSegment && rangeDownload.targetSegment > 0" class="disable">下载完成</div>
     <div v-else @click="togglePause">{{ isPause ? '恢复下载' : '暂停下载' }}</div>
   </section>
+  <div v-if="!downloading" class="m-p-stream" @click="streamDownload">特大视频原格式下载，边下载边保存，彻底解决大文件下载内存不足问题 </div>
+  <!-- <div v-if="!downloading" class="m-p-stream" @click="streamDownload(true)">特大视频 MP4 格式下载，边下载边保存，彻底解决大文件下载内存不足问题 </div> -->
 
   <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
   <a class="m-p-final" target="_blank" href="https://segmentfault.com/a/1190000025182822">下载的视频看不了？试试这个终结解决方案「无差别视频提取工具」，有配套「油猴」插件啦！！！</a>
@@ -396,7 +402,7 @@
   <template v-if="finishList.length > 0">
     <div class="m-p-line"></div>
     <!-- <div class="m-p-retry" v-if="errorNum && downloadIndex >= rangeDownload.targetSegment" @click="retryAll">重新下载错误片段</div> -->
-    <div class="m-p-force" v-if="mediaFileList.length" @click="forceDownload">强制下载现有片段</div>
+    <div class="m-p-force" v-if="mediaFileList.length && !streamWriter" @click="forceDownload">强制下载现有片段</div>
     <div class="m-p-tips">待下载碎片总量：{{ rangeDownload.targetSegment }}，已下载：{{ finishNum }}，错误：{{ errorNum }}，进度：{{ (finishNum / rangeDownload.targetSegment * 100).toFixed(2) }}%</div>
     <div class="m-p-tips" :class="[errorNum ? 'error-tips' : '']">若某视频碎片下载发生错误，将标记为红色，可点击相应图标进行重试</div>
     <section class="m-p-segment">
@@ -419,6 +425,8 @@ var _hmt = _hmt || [];
 <script src="https://upyun.luckly-mjw.cn/lib/vue.js"></script>
 <script src="https://upyun.luckly-mjw.cn/lib/aes-decryptor.js"></script>
 <script src="https://upyun.luckly-mjw.cn/lib/mux-mp4.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.3/StreamSaver.min.js"></script> -->
+<script src="./StreamSaver.js"></script>
 
 <script>
   
@@ -429,13 +437,15 @@ new Vue({
 
   data() {
     return {
-      url: '', // 在线链接
+      // url: '', // 在线链接
+      // url: 'https://vod1.bdzybf7.com/20220911/ArIAdgxk/1700kb/hls/index.m3u8', // 在线链接
+      url: 'http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8', // 在线链接
       tips: 'm3u8 视频在线提取工具', // 顶部提示
       title: '', // 视频标题
       isPause: false, // 是否暂停下载
       isGetMP4: false, // 是否转码为 MP4 下载
       durationSecond: 0, // 视频持续时长
-      isShowRefer: true, // 是否显示推送
+      isShowRefer: false, // 是否显示推送
       downloading: false, // 是否下载中
       beginTime: '', // 开始下载的时间
       errorNum: 0, // 错误数
@@ -444,6 +454,8 @@ new Vue({
       finishList: [], // 下载完成项目
       tsUrlList: [], // ts URL数组
       mediaFileList: [], // 下载的媒体数组
+      streamWriter: null, // 文件流写入器
+      streamDownloadIndex: 0, // 文件流写入器，正准备写入第几个视频片段
       rangeDownload: { // 特定范围下载
         isShowRange: false, // 是否显示范围下载
         startSegment: '', // 起始片段
@@ -541,6 +553,17 @@ new Vue({
         domain.pop()
         return domain.join('/') + '/' + targetURL
       }
+    },
+
+    // 使用流式下载，边下载边保存，解决大视频文件内存不足的难题 
+    streamDownload(isMp4){
+      this.isGetMP4 = isMp4
+      let fileName = this.title || this.formatTime(new Date(), 'YYYY_MM_DD hh_mm_ss')
+      if(document.title !== 'm3u8 downloader'){
+        fileName = window.top.document.title
+      }
+      this.streamWriter = streamSaver.createWriteStream(`${fileName}.${isMp4 ? 'mp4' : 'ts'}`).getWriter()
+      this.getM3U8()
     },
 
     // 解析为 mp4 下载
@@ -722,7 +745,20 @@ new Vue({
         this.mediaFileList[index - this.rangeDownload.startSegment + 1] = afterData // 判断文件是否需要解密
         this.finishList[index].status = 'finish'
         this.finishNum++
-        if (this.finishNum === this.rangeDownload.targetSegment) {
+        if (this.streamWriter){
+          for (let index = this.streamDownloadIndex; index < this.mediaFileList.length; index++) {
+            if(this.mediaFileList[index]){
+              this.streamWriter.write(new Uint8Array(this.mediaFileList[index]))
+              this.mediaFileList[index] = null
+              this.streamDownloadIndex = index + 1
+            } else {
+              break
+            }
+          }
+          if (this.streamDownloadIndex >= this.rangeDownload.targetSegment){
+            this.streamWriter.close()
+          }
+        } else if (this.finishNum === this.rangeDownload.targetSegment) {
           let fileName = this.title || this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss')
           if(document.title !== 'm3u8 downloader'){
             fileName = window.top.document.title
@@ -760,7 +796,7 @@ new Vue({
     // 暂停与恢复
     togglePause() {
       this.isPause = !this.isPause
-      !this.isPause && this.retryAll()
+      !this.isPause && this.retryAll(true)
     },
 
     // 重新下载某个片段
@@ -782,7 +818,7 @@ new Vue({
     },
 
     // 重新下载所有错误片段
-    retryAll() {
+    retryAll(forceRestart) {
       
       if (!this.finishList.length || this.isPause) {
         return
@@ -797,7 +833,7 @@ new Vue({
       })
       this.errorNum = 0
       // 已经全部下载进程都跑完了，则重新启动下载进程
-      if (this.downloadIndex >= this.rangeDownload.endSegment) {
+      if (this.downloadIndex >= this.rangeDownload.endSegment || forceRestart) {
         this.downloadIndex = firstErrorIndex
         this.downloadTS()
       } else { // 否则只是将下载索引，改为最近一个错误的项目，从那里开始遍历
