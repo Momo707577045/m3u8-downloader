@@ -1,167 +1,154 @@
-<!--
-	mitm.html is the lite "man in the middle"
+<!-- 中间层页面，专门用于下载，在此页面中注册 serviceWorker，并实现拦截 -->
+<!-- 本页面存在的意义，在于隔离 web 主进程的请求，让 serviceWorker 仅拦截本页面的请求 -->
 
-	This is only meant to signal the opener's messageChannel to
-	the service worker - when that is done this mitm can be closed
-    but it's better to keep it alive since this also stops the sw
-    from restarting
-
-	The service worker is capable of intercepting all request and fork their
-	own "fake" response - wish we are going to craft
-	when the worker then receives a stream then the worker will tell the opener
-	to open up a link that will start the download
--->
+<!-- serviceWorker 完全异步，全程 API 均使用 Promise 完成异步操作 -->
 <script>
-  // This will prevent the sw from restarting
+  // 保活，每 10s 执行一次 ping，避免 serviceWorker 被删除
   let keepAlive = () => {
-    keepAlive = () => {}
+    keepAlive = () => { }
     var ping = location.href.substr(0, location.href.lastIndexOf('/')) + '/ping'
     var interval = setInterval(() => {
-      if (sw) {
-        sw.postMessage('ping')
+      if (serviceWorker) {
+        serviceWorker.postMessage('ping')
       } else {
         fetch(ping).then(res => res.text(!res.ok && clearInterval(interval)))
       }
     }, 10000)
   }
-  
-  // message event is the first thing we need to setup a listner for
-  // don't want the opener to do a random timeout - instead they can listen for
-  // the ready event
-  // but since we need to wait for the Service Worker registration, we store the
-  // message for later
-  let messages = []
-  window.onmessage = evt => messages.push(evt)
-  
-  let sw = null
-  let scope = ''
-  
+
+  let scope = '' // 当前 serviceWorker 所在域，是其唯一标识符
+  let serviceWorker = null // serviceWorker 实例
+  let tempMessageStore = [] // 在处理函数未准备好之前，临时存储的 message
+
+  // 进入页面马上进行消息监听，再后续处理函数 ready 后，再触发这些 message 的处理
+  window.onmessage = evt => tempMessageStore.push(evt)
+
+  // 注册 serviceWorker，检测是否有旧的实例，进行复用。
   function registerWorker() {
-    return navigator.serviceWorker.getRegistration('./').then(swReg => {
-      return swReg || navigator.serviceWorker.register('sw.js', { scope: './' })
-    }).then(swReg => {
-      const swRegTmp = swReg.installing || swReg.waiting
-  
-      scope = swReg.scope
-  
-      return (sw = swReg.active) || new Promise(resolve => {
-        swRegTmp.addEventListener('statechange', fn = () => {
-          if (swRegTmp.state === 'activated') {
-            swRegTmp.removeEventListener('statechange', fn)
-            sw = swReg.active
-            resolve()
+    // 获取 ./ 域下已经注册过的 serviceWorker，getRegistration 返回单个，getRegistrations 返回所有
+    return navigator.serviceWorker.getRegistration('./')
+      .then(serviceWorkerRegistration => {
+        // 如果已经存在注册过的 serviceWorkerRegistration，则直接返回，否则产生新的一个
+        return serviceWorkerRegistration || navigator.serviceWorker.register('serviceWorker.js', { scope: './' })
+      }).then(serviceWorkerRegistration => {
+        scope = serviceWorkerRegistration.scope // 保存所在域
+
+        // 如果注册已就绪，则直接赋值并返回
+        if (serviceWorkerRegistration.active) {
+          serviceWorker = serviceWorkerRegistration.active
+          return
+        }
+
+        // 如果处于注册中，返回 promise，并监听其状态变更，等待其就绪状态
+        const swRegTmp = serviceWorkerRegistration.installing || serviceWorkerRegistration.waiting
+        return new Promise(resolve => {
+          const onStatechange = () => {
+            if (swRegTmp.state === 'activated') {
+              swRegTmp.removeEventListener('statechange', onStatechange)
+              serviceWorker = serviceWorkerRegistration.active
+              resolve()
+            }
           }
+          swRegTmp.addEventListener('statechange', onStatechange)
         })
       })
-    })
   }
-  
-  // Now that we have the Service Worker registered we can process messages
-  function onMessage (event) {
-    let { data, ports, origin } = event
-  
-    // It's important to have a messageChannel, don't want to interfere
-    // with other simultaneous downloads
+
+  // 消息监听，监听 web 主进程发送过来的消息，并进行数据中转，及数据的处理与转译
+  function onMessage(event) {
+    let {
+      data, // 数据
+      ports, // channel 所在渠道
+      origin // 消息作用域
+    } = event
+
+    console.log('onMessage', event)
+
+    // 检测消息通道
     if (!ports || !ports.length) {
       throw new TypeError("[StreamSaver] You didn't send a messageChannel")
     }
-  
+
+    // 检测接受的数据实体
     if (typeof data !== 'object') {
       throw new TypeError("[StreamSaver] You didn't send a object")
     }
-  
-    // the default public service worker for StreamSaver is shared among others.
-    // so all download links needs to be prefixed to avoid any other conflict
-    data.origin = origin
-  
-    // if we ever (in some feature versoin of streamsaver) would like to
-    // redirect back to the page of who initiated a http request
-    data.referrer = data.referrer || document.referrer || origin
-  
-    // pass along version for possible backwards compatibility in sw.js
-    data.streamSaverVersion = new URLSearchParams(location.search).get('version')
-  
-    if (data.streamSaverVersion === '1.2.0') {
-      console.warn('[StreamSaver] please update streamsaver')
+
+    // 检查 readableStream
+    if (data.readableStream) {
+      console.warn("[StreamSaver] You should send the readableStream in the messageChannel, not throught mitm")
     }
-  
+
+    // 检查 pathname
+    if (!data.pathname) {
+      console.warn("[StreamSaver] Please send `data.pathname` (eg: /pictures/summer.jpg)")
+      data.pathname = Math.random().toString().slice(-6) + '/' + data.filename
+    }
+
+
     /** @since v2.0.0 */
     if (!data.headers) {
       console.warn("[StreamSaver] pass `data.headers` that you would like to pass along to the service worker\nit should be a 2D array or a key/val object that fetch's Headers api accepts")
     } else {
       // test if it's correct
-      // should thorw a typeError if not
+      // should throw a typeError if not
       new Headers(data.headers)
     }
-  
-    /** @since v2.0.0 */
-    if (typeof data.filename === 'string') {
-      console.warn("[StreamSaver] You shouldn't send `data.filename` anymore. It should be included in the Content-Disposition header option")
-      // Do what File constructor do with fileNames
-      data.filename = data.filename.replace(/\//g, ':')
-    }
-  
-    /** @since v2.0.0 */
-    if (data.size) {
-      console.warn("[StreamSaver] You shouldn't send `data.size` anymore. It should be included in the content-length header option")
-    }
-  
-    /** @since v2.0.0 */
-    if (data.readableStream) {
-      console.warn("[StreamSaver] You should send the readableStream in the messageChannel, not throught mitm")
-    }
-  
-    /** @since v2.0.0 */
-    if (!data.pathname) {
-      console.warn("[StreamSaver] Please send `data.pathname` (eg: /pictures/summer.jpg)")
-      data.pathname = Math.random().toString().slice(-6) + '/' + data.filename
-    }
-  
-    // remove all leading slashes
+
+
+    // the default public service worker for StreamSaver is shared among others.
+    // so all download links needs to be prefixed to avoid any other conflict
+    data.origin = origin
+
+    // if we ever (in some feature versoin of streamsaver) would like to
+    // redirect back to the page of who initiated a http request
+    data.referrer = data.referrer || document.referrer || origin
+
+    // 删除所有前导斜杠
     data.pathname = data.pathname.replace(/^\/+/g, '')
-  
+
     // remove protocol
+    // 去除协议
     let org = origin.replace(/(^\w+:|^)\/\//, '')
-  
-    // set the absolute pathname to the download url.
+
+    // 设置绝对路径，以用于下载
     data.url = new URL(`${scope + org}/${data.pathname}`).toString()
-  
+
+    // 检查路径是否合法
     if (!data.url.startsWith(`${scope + org}/`)) {
       throw new TypeError('[StreamSaver] bad `data.pathname`')
     }
-  
+
     // This sends the message data as well as transferring
     // messageChannel.port2 to the service worker. The service worker can
     // then use the transferred port to reply via postMessage(), which
     // will in turn trigger the onmessage handler on messageChannel.port1.
-  
+
     const transferable = data.readableStream
-      ? [ ports[0], data.readableStream ]
-      : [ ports[0] ]
-  
+      ? [ports[0], data.readableStream]
+      : [ports[0]]
+
     if (!(data.readableStream || data.transferringReadable)) {
       keepAlive()
     }
-  
-    return sw.postMessage(data, transferable)
+
+    // 将从 web 主进程接收到的数据，传输给 serviceWorker 接收
+    return serviceWorker.postMessage(data, transferable)
   }
-  
+
+  // 消息回调，告知主进程，本页面已准备就绪
   if (window.opener) {
-    // The opener can't listen to onload event, so we need to help em out!
-    // (telling them that we are ready to accept postMessage's)
     window.opener.postMessage('StreamSaver::loadedPopup', '*')
   }
-  
+
+  // 注册完成，并进行消息处理
   if (navigator.serviceWorker) {
     registerWorker().then(() => {
       window.onmessage = onMessage
-      messages.forEach(window.onmessage)
+      tempMessageStore.forEach(window.onmessage) // 将之前临时存储的 message 放入处理函数中执行
     })
   } else {
-    // FF can ping sw with fetch from a secure hidden iframe
-    // shouldn't really be possible?
     keepAlive()
   }
-  
-  </script>
-  
+
+</script>
