@@ -8,8 +8,8 @@
 // @exclude      http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
 // @exclude      https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html
 // @exclude      https://www.bilibili.com/*
-// @downloadURL	 https://blog.luckly-mjw.cn/tool-show/media-source-extract/media-source-extract.user.js
-// @updateURL	   https://blog.luckly-mjw.cn/tool-show/media-source-extract/media-source-extract.user.js
+// @downloadURL	 https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/m3u8-downloader.user.js
+// @updateURL	   https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/m3u8-downloader.user.js
 // @grant        none
 // @run-at document-start
 // ==/UserScript==
@@ -185,11 +185,16 @@
           let $vue = document.createElement('script')
           $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
 
+          // 加载 stream 流式下载器
+          let $streamSaver = document.createElement('script')
+          $streamSaver.src = 'https://upyun.luckly-mjw.cn/lib/stream-saver.js'
+
           // 监听 vue 加载完成，执行业务代码
           $vue.addEventListener('load', function() {eval(script)})
-          document.body.appendChild($vue);
+          document.body.appendChild($streamSaver);
           document.body.appendChild($mp4);
           document.body.appendChild($ase);
+          document.body.appendChild($vue);
           alert('注入成功，请滚动到页面底部')
         },
       })
