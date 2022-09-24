@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
-// @version      0.5.0
+// @version      0.6.0
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
@@ -51,7 +51,7 @@
           m3u8Target = url
           console.log('【m3u8】----------------------------------------')
           console.log(url)
-          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + url + '&title=' + window.top.document.title)
+          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + url + '&title=' + getTitle())
         }
       }
     })
@@ -72,6 +72,17 @@
       }
       return realXHR
     }
+  }
+
+  // 获取顶部 window title，因可能存在跨域问题，故使用 try catch 进行保护
+  function getTitle(){
+    let title = document.title;
+    try {
+      title = window.top.document.title
+    } catch (error) {
+      console.log(error)
+    }
+    return title
   }
 
   function appendDom() {
@@ -134,7 +145,8 @@
     })
 
     m3u8Jump.addEventListener('click', function() {
-      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target + '&title=' + window.top.document.title)
+
+      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target + '&title=' + getTitle())
     })
 
     m3u8Append.addEventListener('click', function() {
