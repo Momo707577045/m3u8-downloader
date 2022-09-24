@@ -299,7 +299,7 @@
   .m-p-segment .error:hover {
     opacity: 0.9;
   }
-  .m-p-stream, .m-p-cross, .m-p-final {
+  .m-p-stream, .m-p-report, .m-p-cross, .m-p-final {
     margin-top: 10px;
     display: inline-block;
     width: 100%;
@@ -316,6 +316,10 @@
   }
   .m-p-stream {
     background-color: #0ACD76 !important;
+  }
+  .m-p-report {
+    background-color: #e74c3c !important;
+    text-decoration: none;
   }
   .m-p-final {
     text-decoration: none;
@@ -395,6 +399,7 @@
   </section>
   <div v-if="!downloading && isSupperStreamWrite" class="m-p-stream" @click="streamDownload(false)">特大视频原格式下载，边下载边保存，彻底解决大文件下载内存不足问题 </div>
   <div v-if="!downloading && isSupperStreamWrite" class="m-p-stream" @click="streamDownload(true)">特大视频 MP4 格式下载，边下载边保存，彻底解决大文件下载内存不足问题 </div>
+  <a v-if="!downloading" class="m-p-report" target="_blank" href="https://segmentfault.com/a/1190000021847172">运行出现问题，点击此按钮留言，作者将第一时间跟进回复，共同维护本项目</a>
 
   <div class="m-p-cross" @click="copyCode">当无法下载，资源发生跨域限制时，在视频源页面打开控制台，注入代码解决，点击本按钮复制代码</div>
   <a class="m-p-final" target="_blank" href="https://segmentfault.com/a/1190000025182822">下载的视频看不了？试试这个终结解决方案「无差别视频提取工具」，有配套「油猴」插件啦！！！</a>
