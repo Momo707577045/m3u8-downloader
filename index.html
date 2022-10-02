@@ -503,13 +503,13 @@ new Vue({
         url: this.url,
         success: (m3u8Str) => {
           this.tsUrlList = []
-
+          let tsfileSuffixName = prompt("在m3u8文件里面的ts文件URL的后缀名是什么", ".ts")
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
             if (this.isGetMP4 && item.toUpperCase().indexOf('#EXTINF:') > -1) { // 计算视频总时长，设置 mp4 信息时使用
               this.durationSecond += parseFloat(item.split('#EXTINF:')[1])
             }
-            if (item.toLowerCase().indexOf('.ts') > -1) {
+            if (item.toLowerCase().indexOf(tsfileSuffixName) > -1) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
