@@ -509,7 +509,6 @@ new Vue({
       }
     },
 
-
     // 获取顶部 window title，因可能存在跨域问题，故使用 try catch 进行保护
     getDocumentTitle(){
       let title = document.title;
@@ -728,6 +727,7 @@ new Vue({
         }
         this.downloadIndex++
         if (this.finishList[index] && this.finishList[index].status === '') {
+          this.finishList[index].status = 'downloading'
           this.ajax({
             url: this.tsUrlList[index],
             type: 'file',
@@ -840,7 +840,7 @@ new Vue({
       }
 
       let firstErrorIndex = this.downloadIndex // 没有错误项目，则每次都递增
-      this.finishList.forEach((item, index) => { // 重置所有片段状态
+      this.finishList.forEach((item, index) => { // 重置所有错误片段状态
         if (item.status === 'error') {
           item.status = ''
           firstErrorIndex = Math.min(firstErrorIndex, index)
