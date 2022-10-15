@@ -46,7 +46,7 @@
     ajax({
       url,
       success: (fileStr) => {
-        if (fileStr.indexOf('.ts') > -1) {
+        if (/.(png|image|ts|jpg|mp4|jpeg)/.test(fileStr)) {
           appendDom()
           m3u8Target = url
           console.log('【m3u8】----------------------------------------')
