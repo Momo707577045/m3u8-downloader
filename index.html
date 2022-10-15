@@ -480,7 +480,6 @@ new Vue({
   },
 
   created() {
-    this.getTitle();
     this.getSource();
     window.addEventListener('keyup', this.onKeyup)
     setInterval(this.retryAll.bind(this), 2000) // 每两秒重新下载一遍错误片段，实现错误自动重试
@@ -496,16 +495,6 @@ new Vue({
       let { href } = location
       if (href.indexOf('?source=') > -1) {
         this.url = href.split('?source=')[1]
-      }
-    },
-
-    // 获取视频标题
-    getTitle(){
-      let { href } = location
-      const currentUrl = new URL(location.href)
-      const title = currentUrl.searchParams.get('title')
-      if(title) {
-        this.title = title
       }
     },
 
@@ -572,6 +561,7 @@ new Vue({
     // 使用流式下载，边下载边保存，解决大视频文件内存不足的难题 
     streamDownload(isMp4){
       this.isGetMP4 = isMp4
+      this.title = new URL(this.url).searchParams.get('title') || this.title // 获取视频标题
       let fileName = this.title || this.formatTime(new Date(), 'YYYY_MM_DD hh_mm_ss')
       if(document.title !== 'm3u8 downloader'){
         fileName = this.getDocumentTitle()
@@ -592,7 +582,7 @@ new Vue({
         alert('请输入链接')
         return
       }
-      if (this.url.toLowerCase().indexOf('.m3u8') === -1) {
+      if (this.url.toLowerCase().indexOf('m3u8') === -1) {
         alert('链接有误，请重新输入')
         return
       }
@@ -614,6 +604,7 @@ new Vue({
         window.history.replaceState(null, '', `${location.href.split('?')[0]}?source=${this.url}`)
       }
 
+      this.title = new URL(this.url).searchParams.get('title') || this.title // 获取视频标题
       this.tips = 'm3u8 文件下载中，请稍后'
       this.beginTime = new Date()
       this.ajax({

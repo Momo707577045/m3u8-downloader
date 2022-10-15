@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
-// @version      0.8.0
+// @version      0.10.0
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
 // @author       Momo707577045
 // @include      *
@@ -48,10 +48,12 @@
       success: (fileStr) => {
         if (/.(png|image|ts|jpg|mp4|jpeg)/.test(fileStr)) {
           appendDom()
-          m3u8Target = url
+          const urlObj = new URL(url)
+          urlObj.searchParams.append('title', getTitle())
+          m3u8Target = urlObj.href
           console.log('【m3u8】----------------------------------------')
-          console.log(url)
-          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + url + '&title=' + getTitle())
+          console.log(urlObj)
+          console.log('http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target)
         }
       }
     })
@@ -150,8 +152,7 @@
     })
 
     m3u8Jump.addEventListener('click', function() {
-
-      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target + '&title=' + getTitle())
+      window.open('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target)
     })
 
     m3u8Append.addEventListener('click', function() {
