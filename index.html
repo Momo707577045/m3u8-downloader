@@ -624,7 +624,7 @@ new Vue({
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
-            if (item.toLowerCase().indexOf('.ts') > -1 || item.toLowerCase().indexOf('.image') > -1) {
+            if (/.(png|image|ts|jpg|mp4|jpeg)/.test(item)) {
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
