@@ -615,7 +615,9 @@ new Vue({
 
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
-            if (/.(png|image|ts|jpg|mp4|jpeg)/.test(item)) {
+            // if (/.(png|image|ts|jpg|mp4|jpeg)/.test(item)) {
+            if (/^[^#]/.test(item)) {
+              console.log(item)
               this.tsUrlList.push(this.applyURL(item, this.url))
               this.finishList.push({
                 title: item,
@@ -682,7 +684,7 @@ new Vue({
 
     // 获取AES配置
     getAES() {
-      alert('视频被 AES 加密，点击确认，进行视频解码')
+      // alert('视频被 AES 加密，点击确认，进行视频解码')
       this.ajax({
         type: 'file',
         url: this.aesConf.uri,

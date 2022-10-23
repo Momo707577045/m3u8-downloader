@@ -47,7 +47,7 @@
     ajax({
       url,
       success: (fileStr) => {
-        if (/.(png|image|ts|jpg|mp4|jpeg)/.test(fileStr)) {
+        if (/(png|image|ts|jpg|mp4|jpeg|EXTINF)/.test(fileStr)) {
           appendDom()
           const urlObj = new URL(url)
           urlObj.searchParams.append('title', getTitle())
