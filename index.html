@@ -37,7 +37,7 @@
     text-align: center;
     font-weight: bold;
   }
-  .m-p-other, .m-p-tamper, .m-p-github, .m-p-language {
+  .m-p-other, .m-p-tamper, .m-p-github, .m-p-language, .m-p-mse{
     position: fixed;
     right: 50px;
     background-color: #eff3f6;
@@ -70,20 +70,23 @@
     background-color: #eff3f6;
     background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
   }
-  .m-p-github:hover, .m-p-other:hover, .m-p-tamper:hover, .m-p-help:hover, .m-p-language:hover {
+  .m-p-github:hover, .m-p-other:hover, .m-p-tamper:hover, .m-p-help:hover, .m-p-language:hover, .m-p-mse:hover{
     opacity: 0.9;
   }
   .m-p-language {
     bottom: 70px;
   }
   .m-p-other {
-    bottom: 110px;
+    bottom: 150px;
   }
   .m-p-tamper {
     bottom: 30px;
   }
   .m-p-github {
-    bottom: 150px;
+    bottom: 190px;
+  }
+  .m-p-mse {
+    bottom: 110px;
   }
   /*广告*/
   .m-p-refer {
@@ -363,6 +366,7 @@
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
   <a class="m-p-help" target="_blank" href="https://segmentfault.com/a/1190000021847172">?</a>
+  <a class="m-p-mse" target="_blank" href="https://segmentfault.com/a/1190000025182822">无差别提取工具</a>
   <a class="m-p-tamper" target="_blank" href="https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/m3u8-downloader.user.js">手动添加/更新油猴插件</a>
   <a class="m-p-github" target="_blank" href="https://github.com/Momo707577045/m3u8-downloader">github</a>
   <a class="m-p-other" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
@@ -616,6 +620,7 @@ new Vue({
           // 提取 ts 视频片段地址
           m3u8Str.split('\n').forEach((item) => {
             // if (/.(png|image|ts|jpg|mp4|jpeg)/.test(item)) {
+            // 放开片段后缀限制，下载非 # 开头的链接片段
             if (/^[^#]/.test(item)) {
               console.log(item)
               this.tsUrlList.push(this.applyURL(item, this.url))
@@ -698,7 +703,7 @@ new Vue({
           this.downloadTS()
         },
         fail: () => {
-          this.alertError('视频已进行定制化加密，不提供定制化解密下载')
+          this.alertError('视频已加密，可试用右下角入口的「无差别提取工具」')
         }
       })
     },
