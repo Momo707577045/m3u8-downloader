@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         m3u8-downloader
+// @name         m3u8-downloader-test
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
 // @version      0.10.1
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件
@@ -14,7 +14,7 @@
 // @run-at document-start
 // ==/UserScript==
 
-(function() {
+(function () {
   'use strict';
   var m3u8Target = ''
   var originXHR = window.XMLHttpRequest
@@ -27,7 +27,7 @@
       xhr.responseType = 'arraybuffer';
     }
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         let status = xhr.status;
         if (status >= 200 && status < 300) {
@@ -67,9 +67,9 @@
     window._hadResetAjax = true
 
     var originOpen = originXHR.prototype.open
-    window.XMLHttpRequest = function() {
+    window.XMLHttpRequest = function () {
       var realXHR = new originXHR()
-      realXHR.open = function(method, url) {
+      realXHR.open = function (method, url) {
         url.toString() && url.toString().indexOf('.m3u8') > 0 && checkM3u8Url(url.toString())
         originOpen.call(realXHR, method, url)
       }
@@ -83,7 +83,7 @@
   }
 
   // 获取顶部 window title，因可能存在跨域问题，故使用 try catch 进行保护
-  function getTitle(){
+  function getTitle() {
     let title = document.title;
     try {
       title = window.top.document.title
@@ -148,17 +148,17 @@
     var m3u8Close = document.getElementById('m3u8-close')
     var m3u8Append = document.getElementById('m3u8-append')
 
-    m3u8Close.addEventListener('click', function() {
+    m3u8Close.addEventListener('click', function () {
       $section.remove()
     })
 
-    m3u8Jump.addEventListener('click', function() {
+    m3u8Jump.addEventListener('click', function () {
       windowOpen('//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=' + m3u8Target)
     })
 
-    m3u8Append.addEventListener('click', function() {
+    m3u8Append.addEventListener('click', function () {
       var _hmt = _hmt || [];
-      (function() {
+      (function () {
         var hm = document.createElement("script");
         hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
         var s = document.getElementsByTagName("script")[0];
@@ -192,29 +192,64 @@
           $section.style.backgroundColor = 'white'
           document.body.appendChild($section);
 
-          // 加载 ASE 解密
-          let $ase = document.createElement('script')
-          $ase.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
+          ajax({ // 加载 ASE 解密
+            url: 'https://upyun.luckly-mjw.cn/lib/stream-saver.js',
+            success: (streamSaverStr) => {
+              let $streamSaver = document.createElement('script')
+              $streamSaver.innerHTML = streamSaverStr
+              document.body.appendChild($streamSaver);
+              ajax({ // 加载 mp4 转码
+                url: 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js',
+                success: (mp4Str) => {
+                  let $mp4 = document.createElement('script')
+                  $mp4.innerHTML = mp4Str
+                  document.body.appendChild($mp4);
+                  ajax({ // 加载 stream 流式下载器
+                    url: 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js',
+                    success: (aseStr) => {
+                      let $ase = document.createElement('script')
+                      $ase.innerHTML = aseStr
+                      document.body.appendChild($ase);
+                      ajax({ // 加载 vue
+                        url: 'https://upyun.luckly-mjw.cn/lib/vue.js',
+                        success: (vueStr) => {
+                          let $vue = document.createElement('script')
+                          $vue.innerHTML = vueStr
+                          document.body.appendChild($vue);
+                          alert('注入成功，请滚动到页面底部')
+                          eval(script)
+                        }
+                      })
+                    }
+                  })
+                }
+              })
+            }
+          })
 
-          // 加载 mp4 转码
-          let $mp4 = document.createElement('script')
-          $mp4.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
+          // // 加载 ASE 解密
+          // let $ase = document.createElement('script')
+          // $ase.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/aes-decryptor.js'
 
-          // 加载 vue
-          let $vue = document.createElement('script')
-          $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
+          // // 加载 mp4 转码
+          // let $mp4 = document.createElement('script')
+          // $mp4.src = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/mux-mp4.js'
 
-          // 加载 stream 流式下载器
-          let $streamSaver = document.createElement('script')
-          $streamSaver.src = 'https://upyun.luckly-mjw.cn/lib/stream-saver.js'
+          // // 加载 vue
+          // let $vue = document.createElement('script')
+          // $vue.src = 'https://upyun.luckly-mjw.cn/lib/vue.js'
 
-          // 监听 vue 加载完成，执行业务代码
-          $vue.addEventListener('load', function() {eval(script)})
-          document.body.appendChild($streamSaver);
-          document.body.appendChild($mp4);
-          document.body.appendChild($ase);
-          document.body.appendChild($vue);
-          alert('注入成功，请滚动到页面底部')
+          // // 加载 stream 流式下载器
+          // let $streamSaver = document.createElement('script')
+          // $streamSaver.src = 'https://upyun.luckly-mjw.cn/lib/stream-saver.js'
+
+          // // 监听 vue 加载完成，执行业务代码
+          // $vue.addEventListener('load', function () { eval(script) })
+          // document.body.appendChild($streamSaver);
+          // document.body.appendChild($mp4);
+          // document.body.appendChild($ase);
+          // document.body.appendChild($vue);
+          // alert('注入成功，请滚动到页面底部')
         },
       })
     })
