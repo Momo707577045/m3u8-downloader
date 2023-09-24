@@ -586,10 +586,6 @@ new Vue({
         alert('请输入链接')
         return
       }
-      if (this.url.toLowerCase().indexOf('m3u8') === -1) {
-        alert('链接有误，请重新输入')
-        return
-      }
       if (this.downloading) {
         alert('资源下载中，请稍后')
         return
