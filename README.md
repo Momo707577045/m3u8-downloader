@@ -138,6 +138,10 @@
 - 「跳转下载」即新开页面，打开本工具页面，自动携带并解析目标地址
 - 「注入下载」为解决跨域而生，直接将代码注入到当前视频网站，进行视频下载
 - 插件源码: https://github.com/Momo707577045/m3u8-downloader/blob/master/m3u8-downloader.user.js
+- 自动添加油猴插件步骤：
+    - 请先确保油猴插件已安装并已启用
+    - 点击下方链接，并在弹出的新窗口中点击“安装”
+    - ![安装链接](https://github.com/Momo707577045/m3u8-downloader/raw/master/m3u8-downloader.user.js)
 - 手动添加油猴插件步骤
   - 点击 tamper-monkey「油猴」icon，点击「添加新脚本」
 
