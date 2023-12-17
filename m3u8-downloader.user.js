@@ -16,7 +16,9 @@
 
 (function () {
   'use strict';
+  var showMp4 = true
   var m3u8Target = ''
+  var mp4Objs = []
   var originXHR = window.XMLHttpRequest
   var windowOpen = window.open
 
@@ -42,6 +44,17 @@
     xhr.send(null);
   }
 
+  // 普通下载
+  function downloadWithA(url, name) {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+  }
+
   // 检测 m3u8 链接的有效性
   function checkM3u8Url(url) {
     ajax({
@@ -49,6 +62,10 @@
       success: (fileStr) => {
         if (/(png|image|ts|jpg|mp4|jpeg|EXTINF)/.test(fileStr)) {
           appendDom()
+          document.getElementById('m3u8-jump').style.display = 'block'
+          document.getElementById('m3u8-close').style.display = 'block'
+          document.getElementById('m3u8-append').style.display = 'block'
+
           const urlObj = new URL(url)
           urlObj.searchParams.append('title', getTitle())
           m3u8Target = urlObj.href
@@ -58,6 +75,23 @@
         }
       }
     })
+  }
+
+  // 定时器，检查 mp4 视频资源
+  function checkVideo() {
+    let $videoList = document.getElementsByTagName('video')
+    for (let i = 0, length = $videoList.length; i < length; i++) {
+      const url = $videoList[i].currentSrc
+      if (url.indexOf('.mp4') > 0 && !mp4Objs.find(mp4 => mp4.url === url)) {
+        appendDom();
+        document.getElementById('mp4-show').style.display = 'block'
+        mp4Objs.push({
+          url,
+          fileName: url.slice(url.lastIndexOf('/') + 1).split('?')[0],
+        });
+      }
+    }
+    setTimeout(checkVideo, 3000);
   }
 
   function resetAjax() {
@@ -71,6 +105,14 @@
       var realXHR = new originXHR()
       realXHR.open = function (method, url) {
         url.toString() && url.toString().indexOf('.m3u8') > 0 && checkM3u8Url(url.toString())
+        // if (url.toString() && url.toString().toLocaleLowerCase().indexOf('.mp4') > 0) {
+        //   appendDom();
+        //   document.getElementById('mp4-show').style.display = 'block'
+        //   mp4Objs.push({
+        //     url,
+        //     fileName: url.slice(url.lastIndexOf('/') + 1).split('?')[0],
+        //   });
+        // }
         originOpen.call(realXHR, method, url)
       }
       return realXHR
@@ -98,7 +140,19 @@
       return
     }
     var domStr = `
+    <div style="
+    display: none;
+    margin-top: 6px;
+    padding: 6px 10px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    background-color: #3D8AC7;
+  " id="mp4-show">MP4下载</div>
   <div style="
+    display: none;
     margin-top: 6px;
     padding: 6px 10px ;
     font-size: 18px;
@@ -109,6 +163,7 @@
     background-color: #3D8AC7;
   " id="m3u8-jump">跳转下载</div>
   <div style="
+    display: none;
     margin-top: 6px;
     padding: 6px 10px ;
     font-size: 18px;
@@ -144,9 +199,16 @@
     $section.innerHTML = domStr
     document.body.appendChild($section);
 
+    var mp4Show = document.getElementById('mp4-show')
     var m3u8Jump = document.getElementById('m3u8-jump')
     var m3u8Close = document.getElementById('m3u8-close')
     var m3u8Append = document.getElementById('m3u8-append')
+
+    mp4Show.addEventListener('click', function () {
+      showMp4 = !showMp4
+      mp4Show.innerHTML = showMp4 ? 'MP4下载' : '关闭MP4'
+      switchMp4Download();
+    })
 
     m3u8Close.addEventListener('click', function () {
       $section.remove()
@@ -256,5 +318,41 @@
 
   }
 
+  function switchMp4Download() {
+    // 切换显示
+    if (document.getElementById('mp4-download-dom')) {
+      document.getElementById('mp4-download-dom').remove();
+      return
+    }
+    var $section = document.createElement('section')
+    $section.id = 'mp4-download-dom'
+    $section.style.position = 'fixed'
+    $section.style.zIndex = '9999'
+    $section.style.top = '20px'
+    $section.style.right = '20px'
+    $section.style.textAlign = 'center'
+    mp4Objs.forEach(obj => {
+      var $mp4 = document.createElement('div')
+      $mp4.innerHTML = obj.fileName
+      $mp4.title = obj.url
+      $mp4.style = `
+      margin-top: 4px;
+      padding: 3px 4px ;
+      font-size: 12px;
+      color: white;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid #eeeeee;
+      background-color: #3D8AC7;
+      `
+      $mp4.addEventListener('click', () => {
+        downloadWithA(obj.url, obj.fileName);
+      })
+      $section.appendChild($mp4);
+    })
+    document.body.appendChild($section);
+  }
+
   resetAjax()
+  checkVideo()
 })();
