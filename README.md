@@ -125,7 +125,7 @@
 - 本人已 fork 该项目，并修复该 bug，修复后的项目[链接在这里](https://github.com/Momo707577045/mux.js)
 
 ### 第三方接入
-- 在 url 中通过 source 参数拼接下载地址即可，如：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8```
+- 在 url 中通过 source 参数拼接下载地址即可，如：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8```
 - 系统将自动解析该参数
 
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/16.jpeg)

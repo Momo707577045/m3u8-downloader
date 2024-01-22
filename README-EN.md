@@ -125,7 +125,7 @@ Listing the amount of code is just to show that this tool only applies the commo
 - I have forked the project and fixed the bug. The link of the project after the repair is [here](https://github.com/Momo707577045/mux.js)
 
 ### Third party access
-- In the URL, you can splice the download address through the source parameter, such as：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8```
+- In the URL, you can splice the download address through the source parameter, such as：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8```
 - The system will automatically resolve the parameter
 
     ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/16.jpeg)

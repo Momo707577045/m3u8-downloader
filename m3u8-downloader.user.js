@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         m3u8-downloader-test
+// @name         m3u8-downloader
 // @namespace    https://github.com/Momo707577045/m3u8-downloader
 // @version      0.10.1
 // @description  https://github.com/Momo707577045/m3u8-downloader 配套插件

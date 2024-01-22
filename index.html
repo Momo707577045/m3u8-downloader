@@ -380,7 +380,7 @@
   </a>
 
   <!--文件载入-->
-  <div class="m-p-temp-url">测试链接：http://1257120875.vod2.myqcloud.com/0ef121cdvodtransgzp1257120875/3055695e5285890780828799271/v.f230.m3u8</div>
+  <div class="m-p-temp-url">测试链接：https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8</div>
   <section class="m-p-input-container">
     <input type="text" v-model="url" :disabled="downloading" placeholder="请输入 m3u8 链接">
 
@@ -598,8 +598,14 @@ new Vue({
       // 在下载页面才触发，代码注入的页面不需要校验
       // 当前协议不一致，切换协议
       if (location.href.indexOf('blog.luckly-mjw.cn') > -1 && this.url.indexOf(location.protocol) === -1) {
-        //alert('当前协议不一致，跳转至正确页面重新下载')
-        location.href = `${this.url.split(':')[0]}://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=${this.url}`
+        const targetUrl = new URL(this.url)
+        const targetLink = `${targetUrl.protocol}//blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=${this.url}`;
+        if(targetUrl.protocol === 'http:'){
+          this.copyToClipboard(targetLink);
+          alert('由于浏览器限制，无法从 https 跳转至 http。请在访问 http 协议页面，页面 url 已复制，直接粘贴使用即可')
+        } else {
+          location.href = targetLink
+        }
         return
       }
 
