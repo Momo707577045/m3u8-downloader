@@ -222,6 +222,9 @@
     color: #444444;
     border: 1px solid #cccccc;
   }
+  .m-p-input-container .baseurl-input {
+    margin-left: 10px;
+  }
   .m-p-input-container .range-input {
     margin-left: 10px;
     flex: 0 0 100px;
@@ -383,6 +386,7 @@
   <div class="m-p-temp-url">测试链接：https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8</div>
   <section class="m-p-input-container">
     <input type="text" v-model="url" :disabled="downloading" placeholder="请输入 m3u8 链接">
+    <input type="text" class="baseurl-input" v-model="baseURL" :disabled="downloading" placeholder="请输入 ts 文件可能的 baseURL">
 
     <!--范围查询-->
     <template v-if="!downloading || rangeDownload.isShowRange">
@@ -446,6 +450,7 @@ new Vue({
   data() {
     return {
       url: '', // 在线链接
+      baseURL: '', // ts文件的baseURL
       tips: 'm3u8 视频在线提取工具', // 顶部提示 
       title: '', // 视频标题
       isPause: false, // 是否暂停下载
@@ -629,7 +634,7 @@ new Vue({
             // 放开片段后缀限制，下载非 # 开头的链接片段
             if (/^[^#]/.test(item)) {
               console.log(item)
-              this.tsUrlList.push(this.applyURL(item, this.url))
+              this.tsUrlList.push(this.applyURL(item, this.baseURL || this.url))
               this.finishList.push({
                 title: item,
                 status: ''
@@ -674,11 +679,11 @@ new Vue({
             this.aesConf.uri = (m3u8Str.match(/(.*URI="([^"]+))"/) || ['', '', ''])[2]
             this.aesConf.iv = (m3u8Str.match(/(.*IV=([^,\s]+))/) || ['', '', ''])[2]
             this.aesConf.iv = this.aesConf.iv ? this.aesConf.stringToBuffer(this.aesConf.iv) : ''
-            this.aesConf.uri = this.applyURL(this.aesConf.uri, this.url)
+            this.aesConf.uri = this.applyURL(this.aesConf.uri, this.baseURL || this.url)
 
             // let params = m3u8Str.match(/#EXT-X-KEY:([^,]*,?METHOD=([^,]+))?([^,]*,?URI="([^,]+)")?([^,]*,?IV=([^,^\n]+))?/)
             // this.aesConf.method = params[2]
-            // this.aesConf.uri = this.applyURL(params[4], this.url)
+            // this.aesConf.uri = this.applyURL(params[4], this.baseURL || this.url)
             // this.aesConf.iv = params[6] ? this.aesConf.stringToBuffer(params[6]) : ''
             this.getAES();
           } else if (this.tsUrlList.length > 0) { // 如果视频没加密，则直接下载片段，否则先下载秘钥
