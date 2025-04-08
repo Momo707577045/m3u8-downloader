@@ -1,11 +1,12 @@
 # 欢迎加入交流群
 
 
-![界面](https://upyun.luckly-mjw.cn/Assets/qrcode/tools.png) ![界面](https://upyun.luckly-mjw.cn/Assets/qrcode/m3u8.png)
+![界面](./imgs/tools.png) ![界面](./imgs/m3u8.png?vs=4)
+)
 
 # m3u8 视频在线提取工具([English version](https://github.com/Momo707577045/m3u8-downloader/blob/master/README-EN.md))
 
-![界面](http://upyun.luckly-mjw.cn/Assets/m3u8-download/01.jpeg)
+![界面](./imgs/01.jpeg)
 ### [工具在线地址](http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html)，推荐使用 chrome 浏览器。
 
 ### 研发背景
@@ -19,7 +20,7 @@
     - 软件被编译打包，无法了解内部运行机制，不清楚里面到底发生了什么。
 - 基于以上原因，开发了本工具。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/09.jpeg)
+    ![](./imgs/09.jpeg)
 
 ### 工具特点
 - 无需安装，打开网页即可用。
@@ -28,7 +29,7 @@
 
 
 ### 功能说明
-![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/02.jpeg)
+![](./imgs/02.jpeg)
 【解析下载】输入 m3u8 链接，点击下载视频。
 【跨域复制代码】当资源出现跨域限制时，点击复制页面代码，在视频页面的控制台输入。将工具注入到视频页面中，解决跨域问题。
 【重新下载错误片段】当部分视频片段下载失败时，点击该按钮，重新下载错误片段。
@@ -40,23 +41,23 @@
 - 找到 network，输入 m3u8，过滤 m3u8 文件。
 - 刷新页面，监听 m3u8 文件。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/03.jpeg)
+    ![](./imgs/03.jpeg)
 - 找到目标m3u8文件，查看文件内容，是否符合格式。
     - 如下为索引文件，不是真正的视频 m3u8 文件
 
-        ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/04.jpeg)
+        ![](./imgs/04.jpeg)
     - 一般内容有许多 ts 字眼的文件才是我们需要的视频 m3u8 文件。
 
-         ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/05.jpeg)
+         ![](./imgs/05.jpeg)
 - 拷贝这个 m3u8 文件的链接。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/06.jpeg)
+    ![](./imgs/06.jpeg)
 - 打开工具页面，输入链接，点击「解析下载」。
 - 出现片段 Icon，则证明操作成功，耐心等待视频下载。
 - 片段全部下载成功，将触发浏览器自动下载，下载整合后的完整视频。
 - 如果有片段下载失败，则点击对应片段，或点击「重新下载错误片段」按钮。重新下载错误片段。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/08.jpeg)
+    ![](./imgs/08.jpeg)
 
 ### 异常情况
 【无法下载，没有显示片段Icon】
@@ -64,17 +65,17 @@
   - 点击「跨域复制代码」按钮。
   - 打开视频目标网页的「开发者工具界面」，找到 console 栏。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/10.jpeg)
+    ![](./imgs/10.jpeg)
   - 粘贴刚刚复制的内容，回车。
   - 滚动页面到底部，发现工具显示在底部。然后在注入的工具中正常使用。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/11.jpeg)
+    ![](./imgs/11.jpeg)
 
 【下载后的视频资源不可看】
   - 网站对视频源进行了加密操作。不同的视频网站有不同的算法操作。无法通用处理。
   - 一般网站不会有这种情况。爱奇艺，腾讯等大视频网站才会有该安全措施。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/12.jpeg)
+    ![](./imgs/12.jpeg)
 
 ### 实现思路
 【下载并解析 m3u8 文件】
@@ -92,7 +93,7 @@
 - 使用 [URL.createObjectURL](https://developer.mozilla.org/zh-CN/docs/Web/API/URL/createObjectURL)，即可得到浏览器内存中，Blob 的文件链接。```URL.createObjectURL(fileBlob)```
 - 最后，使用 a 标签的 [a.download](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/a) 属性，将 a 标签设置为下载功能。主动调用 click 事件```a.click()```。完成文件自动下载。
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/13.jpeg)
+    ![](./imgs/13.jpeg)
 
 
 ### 核心代码
@@ -133,12 +134,12 @@
 - 在 url 中通过 source 参数拼接下载地址即可，如：```http://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html?source=https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8```
 - 系统将自动解析该参数
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/16.jpeg)
+    ![](./imgs/16.jpeg)
 
 
 ### [油猴插件](https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/m3u8-downloader.user.js)
 
-![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/15.jpeg)
+![](./imgs/15.jpeg)
 
 - 「跳转下载」即新开页面，打开本工具页面，自动携带并解析目标地址
 - 「注入下载」为解决跨域而生，直接将代码注入到当前视频网站，进行视频下载
@@ -146,26 +147,26 @@
 - 手动添加油猴插件步骤
   - 点击 tamper-monkey「油猴」icon，点击「添加新脚本」
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/21.jpeg)
+    ![](./imgs/21.jpeg)
 
   - 在当前位置，粘贴上述链接中的源码
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/17.jpeg)
+    ![](./imgs/17.jpeg)
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/18.jpeg)
+    ![](./imgs/18.jpeg)
 
   - 点击「文本」，「保存」
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/19.jpeg)
+    ![](./imgs/19.jpeg)
 
   - 得到如下结果，即为添加成功
 
-    ![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/20.jpeg)
+    ![](./imgs/20.jpeg)
 
 
 
 ### 完结撒花，感谢阅读。
-![](http://upyun.luckly-mjw.cn/Assets/m3u8-download/14.jpeg)
+![](./imgs/14.jpeg)
 
 
 
