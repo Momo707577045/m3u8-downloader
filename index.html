@@ -418,6 +418,20 @@
       <div class="item" v-for="(item, index) in finishList" :class="[item.status]" :title="item.title" @click="retry(index)">{{ index + 1 }}</div>
     </section>
   </template>
+  <div v-else class="m-p-tips" style="border: 1px solid #eeeeee; padding: 20px; border-radius: 10px;">
+    <div style="display: flex; align-items: center; justify-content: center; margin-top: 20px; font-weight: bolder; font-size: 30px; color: #24292e;">
+      <svg style="color: rgb(59, 130, 246); margin-right: 20px;" xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users text-blue-500">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>加入我们的社区
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; margin-top: 20px;">
+      <img src="https://upyun.luckly-mjw.cn/Assets/qrcode/tools.png" alt="效率工具" title="logo" />
+      <img src="https://upyun.luckly-mjw.cn/Assets/qrcode/m3u8.png" alt="m3u8 工具" title="logo" />
+    </div>
+  </div>
 </section>
 </body>
 
