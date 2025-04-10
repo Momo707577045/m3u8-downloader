@@ -528,10 +528,6 @@ new Vue({
         alert('Please input url')
         return
       }
-      if (this.url.toLowerCase().indexOf('.m3u8') === -1) {
-        alert('The url is error, please  re-enter')
-        return
-      }
       if (this.downloading) {
         alert('downloading，please wait')
         return
