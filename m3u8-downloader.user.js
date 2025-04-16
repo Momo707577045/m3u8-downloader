@@ -113,7 +113,7 @@
         //     fileName: url.slice(url.lastIndexOf('/') + 1).split('?')[0],
         //   });
         // }
-        originOpen.call(realXHR, method, url)
+        originOpen.apply(realXHR, arguments)
       }
       return realXHR
     }
