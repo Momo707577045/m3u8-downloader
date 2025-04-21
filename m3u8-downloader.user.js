@@ -117,11 +117,12 @@
       }
       return realXHR
     }
-    XMLHttpRequest.UNSENT = 0;
-    XMLHttpRequest.OPENED = 1;
-    XMLHttpRequest.HEADERS_RECEIVED = 2;
-    XMLHttpRequest.LOADING = 3;
-    XMLHttpRequest.DONE = 4;
+    window.XMLHttpRequest.UNSENT = originXHR.UNSENT;
+    window.XMLHttpRequest.OPENED = originXHR.OPENED;
+    window.XMLHttpRequest.HEADERS_RECEIVED = originXHR.HEADERS_RECEIVED;
+    window.XMLHttpRequest.LOADING = originXHR.LOADING;
+    window.XMLHttpRequest.DONE = originXHR.DONE;
+    window.XMLHttpRequest.prototype = originXHR.prototype;
   }
 
   // 获取顶部 window title，因可能存在跨域问题，故使用 try catch 进行保护
